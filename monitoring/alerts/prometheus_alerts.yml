@@ -1,0 +1,74 @@
+# ==============================================================================
+# monitoring/alerts/prometheus_alerts.yml — Prometheus Alertmanager Rules
+# ==============================================================================
+# Production Alerting Rules for Insurance Claims Intelligence Platform (ICIP)
+# Evaluated every 15s by Prometheus server and routed to Alertmanager.
+# ==============================================================================
+
+groups:
+  - name: icip_platform_alerts
+    rules:
+      # 1. High API Latency Breach (p99 > 2s for 5 minutes)
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint)) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          tier: gateway
+          team: platform-core
+        annotations:
+          summary: "API Gateway p99 request latency exceeded 2.0s on {{ $labels.endpoint }}"
+          description: "Endpoint {{ $labels.endpoint }} p99 latency is currently {{ $value | printf \"%.2f\" }}s (threshold: 2.0s). May indicate vector search saturation or model contention."
+          runbook_url: "https://docs.icip.internal/runbooks/high_latency.html"
+
+      # 2. HTTP 5xx Server Error Spike (> 5% for 2 minutes)
+      - alert: HighErrorRateSpike
+        expr: (sum(rate(http_requests_total{status_code=~"5.."}[2m])) / sum(rate(http_requests_total[2m])) * 100) > 5.0
+        for: 2m
+        labels:
+          severity: critical
+          tier: gateway
+          team: platform-core
+        annotations:
+          summary: "API Gateway 5xx server error rate spike (> 5%)"
+          description: "Server 5xx error rate is currently {{ $value | printf \"%.2f\" }}% over the last 2 minutes. Immediate triage required."
+          runbook_url: "https://docs.icip.internal/runbooks/error_spikes.html"
+
+      # 3. Critical ML Subsystem Offline (Readiness == 0 for 1 minute)
+      - alert: MLSubsystemDown
+        expr: subsystem_readiness_status == 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: mlops
+          team: ml-engineering
+        annotations:
+          summary: "Critical ML Subsystem '{{ $labels.subsystem }}' is offline"
+          description: "Readiness probe reports subsystem '{{ $labels.subsystem }}' is unavailable. Claims adjudication or RAG queries may fail or degrade."
+          runbook_url: "https://docs.icip.internal/runbooks/ml_subsystem_offline.html"
+
+      # 4. Low Straight-Through-Processing (STP) Rate (< 2% for 15 minutes)
+      - alert: LowStraightThroughProcessingRate
+        expr: (sum(rate(claims_stp_approved_total[15m])) / sum(rate(claims_adjudicated_total[15m])) * 100) < 2.0
+        for: 15m
+        labels:
+          severity: warning
+          tier: business
+          team: claims-underwriting
+        annotations:
+          summary: "Touchless STP approval rate dropped below 2.0%"
+          description: "Only {{ $value | printf \"%.2f\" }}% of claims were automatically approved via STP over the last 15 minutes. Indicates model drift or restrictive thresholding."
+          runbook_url: "https://docs.icip.internal/runbooks/stp_rate_drop.html"
+
+      # 5. Process Memory Exhaustion Warning (> 1.8GB near 2GB RAM container guardrail)
+      - alert: HighMemoryUtilization
+        expr: process_memory_rss_bytes > 1932735283
+        for: 5m
+        labels:
+          severity: critical
+          tier: infrastructure
+          team: site-reliability
+        annotations:
+          summary: "FastAPI process memory RSS exceeded 1.8GB"
+          description: "Process memory consumption is currently {{ $value | humanize1024 }}B, approaching the 2.25GB Docker / t2.micro RAM ceiling."
+          runbook_url: "https://docs.icip.internal/runbooks/memory_exhaustion.html"

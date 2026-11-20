@@ -9,6 +9,8 @@ import time
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Request, Response, status
+from starlette.responses import JSONResponse
+from starlette.responses import Response as StarletteResponse
 
 from api.app.config import settings
 from api.app.schemas.common import ApiResponse
@@ -19,12 +21,18 @@ from api.app.schemas.health import (
     SystemMetrics,
 )
 from api.app.services.container import ServiceContainer
+from api.app.services.metrics import metrics_collector
 
 router = APIRouter(tags=["Health & Diagnostics"])
 
 
 @router.get(
     "/health", response_model=ApiResponse[HealthStatus], summary="Liveness Probe"
+)
+@router.get(
+    "/health/live",
+    response_model=ApiResponse[HealthStatus],
+    summary="Liveness Probe (Kubernetes / ALB)",
 )
 def health_check() -> ApiResponse[HealthStatus]:
     """Lightweight Kubernetes / ALB liveness probe.
@@ -46,6 +54,11 @@ def health_check() -> ApiResponse[HealthStatus]:
 
 @router.get(
     "/ready", response_model=ApiResponse[ReadinessReport], summary="Readiness Probe"
+)
+@router.get(
+    "/health/ready",
+    response_model=ApiResponse[ReadinessReport],
+    summary="Readiness Probe (Kubernetes / ALB)",
 )
 def readiness_check(
     request: Request, response: Response
@@ -155,7 +168,9 @@ def readiness_check(
 
 
 @router.get(
-    "/metrics", response_model=ApiResponse[SystemMetrics], summary="Runtime Metrics"
+    "/metrics/json",
+    response_model=ApiResponse[SystemMetrics],
+    summary="Runtime Metrics (JSON)",
 )
 def runtime_metrics(request: Request) -> ApiResponse[SystemMetrics]:
     """Runtime telemetry reporting memory, active threads, and active model flags."""
@@ -174,7 +189,6 @@ def runtime_metrics(request: Request) -> ApiResponse[SystemMetrics]:
         process = psutil.Process(os.getpid())
         memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
     except Exception:
-        # Fallback if psutil is unavailable
         memory_mb = 0.0
 
     models_loaded = services.status_flags if services else {}
@@ -191,4 +205,57 @@ def runtime_metrics(request: Request) -> ApiResponse[SystemMetrics]:
         success=True,
         data=metrics,
         message="Metrics collected successfully",
+    )
+
+
+@router.get(
+    "/metrics",
+    summary="Prometheus Metrics Exposition",
+    response_class=StarletteResponse,
+)
+def prometheus_metrics(request: Request, response: Response) -> StarletteResponse:
+    """Standard Prometheus exposition endpoint (/metrics).
+
+    Scraped by Prometheus and OpenTelemetry agents using text/plain (version 0.0.4).
+    If an explicit application/json Accept header is supplied, delegates to runtime_metrics.
+    """
+    accept = request.headers.get("accept", "")
+    if (
+        "application/json" in accept
+        and "text/plain" not in accept
+        and "version=0.0.4" not in accept
+    ):
+        json_data = runtime_metrics(request)
+        return JSONResponse(content=json_data.model_dump())
+
+    services: ServiceContainer = getattr(request.app.state, "services", None)
+    uptime = (
+        (time.time() - services.startup_time)
+        if (services and services.startup_time > 0)
+        else 0.0
+    )
+
+    memory_bytes = 0.0
+    try:
+        import psutil
+
+        process = psutil.Process(os.getpid())
+        memory_bytes = float(process.memory_info().rss)
+    except Exception:
+        memory_bytes = 0.0
+
+    models_loaded = services.status_flags if services else {}
+    threads = threading.active_count()
+
+    metrics_collector.update_system_metrics(
+        uptime_seconds=uptime,
+        memory_rss_bytes=memory_bytes,
+        active_threads=threads,
+        model_flags=models_loaded,
+    )
+
+    prom_content = metrics_collector.export_prometheus_text()
+    return StarletteResponse(
+        content=prom_content,
+        media_type="text/plain; version=0.0.4; charset=utf-8",
     )

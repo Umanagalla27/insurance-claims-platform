@@ -19,6 +19,7 @@ from api.app.schemas.claims import (
 from api.app.schemas.common import ApiResponse
 from api.app.services.adjudicator import ClaimsAdjudicator
 from api.app.services.container import get_anomaly_detector, get_classifier
+from api.app.services.metrics import metrics_collector
 from ml.anomaly_detection.predict import ClaimAnomalyDetector
 from ml.classification.predict import ClaimClassifier
 
@@ -66,6 +67,20 @@ def analyze_claim(
         classification=clf_res,
         anomaly=anom_res,
     )
+
+    # 4. Record Prometheus Domain Metrics
+    try:
+        metrics_collector.record_claim_adjudication(
+            category=clf_res.predicted_category,
+            outcome=adjudication.action,
+        )
+        if anom_res.is_anomaly or adjudication.action == "FRAUD_INVESTIGATION_FLAG":
+            metrics_collector.record_fraud_detected(category=clf_res.predicted_category)
+
+        if adjudication.action == "AUTO_APPROVE" and not adjudication.requires_supervisor_approval:
+            metrics_collector.record_stp_approval()
+    except Exception as exc:
+        logger.warning("Failed to record Prometheus metrics for claim: %s", exc)
 
     total_latency_ms = round((time.perf_counter() - start_time) * 1000.0, 2)
 

@@ -62,3 +62,80 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
     Environment = var.environment
   }
 }
+
+# 4. CloudWatch Operational & Executive Telemetry Dashboard
+resource "aws_cloudwatch_dashboard" "platform_overview" {
+  dashboard_name = "${var.project_name}-operational-overview-${var.environment}"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/EC2", "CPUUtilization", "InstanceId", var.ec2_instance_id, { stat = "Average", period = 300, color = "#ff7f0e" }],
+            [".", "NetworkIn", ".", ".", { stat = "Sum", period = 300, yAxis = "right", color = "#1f77b4" }],
+            [".", "NetworkOut", ".", ".", { stat = "Sum", period = 300, yAxis = "right", color = "#2ca02c" }]
+          ]
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "EC2 API Gateway Node Performance (CPU & Network I/O)"
+          period  = 300
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/Lambda", "Invocations", "FunctionName", var.lambda_function_name, { stat = "Sum", period = 300, color = "#2ca02c" }],
+            [".", "Errors", ".", ".", { stat = "Sum", period = 300, color = "#d62728" }],
+            [".", "Throttles", ".", ".", { stat = "Sum", period = 300, color = "#9467bd" }]
+          ]
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "Serverless Claims Ingestion Lambda (Invocations vs Runtime Errors)"
+          period  = 300
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/Lambda", "Duration", "FunctionName", var.lambda_function_name, { stat = "Average", period = 300, color = "#1f77b4" }],
+            [".", "Duration", ".", ".", { stat = "p95", period = 300, color = "#e377c2" }],
+            [".", "Duration", ".", ".", { stat = "Maximum", period = 300, color = "#d62728" }]
+          ]
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "Lambda Execution Latency Profile (Avg, p95, Max)"
+          period  = 300
+        }
+      },
+      {
+        type   = "text"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          markdown = "## Insurance Claims Intelligence Platform (ICIP)\n**FinOps Free-Tier SLA Guardrail:**\n- Max monthly spend: **$1.00 USD**\n- EC2 Target: `t2.micro` (750 hrs free)\n- S3 Storage: `Standard-IA` lifecycle after 30 days\n- Alerts: Amazon SNS + CloudWatch Alarms active"
+        }
+      }
+    ]
+  })
+}

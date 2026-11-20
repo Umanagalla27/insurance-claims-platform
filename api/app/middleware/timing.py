@@ -1,15 +1,19 @@
-"""High-performance pure ASGI Request Timing and Correlation ID middleware.
+"""High-performance pure ASGI Request Timing, Correlation ID, and Metrics middleware.
 
 Avoids BaseHTTPMiddleware task-group deadlock and latency overhead,
-providing sub-microsecond header injection and correlation tracing.
+providing sub-microsecond header injection, correlation tracing,
+and automated Prometheus request metrics collection.
 """
 
 from __future__ import annotations
 
+import contextlib
 import time
 import uuid
 from collections.abc import Callable
 from typing import Any
+
+from api.app.services.metrics import metrics_collector
 
 
 class TimingMiddleware:
@@ -38,6 +42,15 @@ class TimingMiddleware:
         updated.append((b"x-request-id", request_id.encode("utf-8")))
         return updated
 
+    @staticmethod
+    def normalize_endpoint(path: str) -> str:
+        """Normalize endpoint paths to prevent high-cardinality label explosion."""
+        if not path:
+            return "/"
+        if len(path) > 1 and path.endswith("/"):
+            path = path[:-1]
+        return path
+
     async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -51,9 +64,11 @@ class TimingMiddleware:
         scope["state"]["request_id"] = request_id
 
         start_time = time.perf_counter()
+        status_code = [200]
 
         async def send_wrapper(message: dict) -> None:
             if message["type"] == "http.response.start":
+                status_code[0] = message.get("status", 200)
                 process_time = time.perf_counter() - start_time
                 orig_headers = message.get("headers", [])
                 message["headers"] = self.attach_timing_headers(
@@ -61,4 +76,17 @@ class TimingMiddleware:
                 )
             await send(message)
 
-        await self.app(scope, receive, send_wrapper)
+        try:
+            await self.app(scope, receive, send_wrapper)
+        finally:
+            duration = time.perf_counter() - start_time
+            method = scope.get("method", "GET")
+            raw_path = scope.get("path", "/")
+            endpoint = self.normalize_endpoint(raw_path)
+            with contextlib.suppress(Exception):
+                metrics_collector.record_http_request(
+                    method=method,
+                    endpoint=endpoint,
+                    status_code=status_code[0],
+                    duration_seconds=duration,
+                )

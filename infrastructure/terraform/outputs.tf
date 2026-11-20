@@ -57,6 +57,11 @@ output "lambda_error_alarm_arn" {
   value       = module.cloudwatch_monitoring.lambda_error_alarm_arn
 }
 
+output "cloudwatch_dashboard_name" {
+  description = "Name of the provisioned CloudWatch Executive Dashboard"
+  value       = module.cloudwatch_monitoring.dashboard_name
+}
+
 output "finops_budget_name" {
   description = "Name of the AWS FinOps zero-spend budget tripwire"
   value       = aws_budgets_budget.zero_spend_guardrail.name

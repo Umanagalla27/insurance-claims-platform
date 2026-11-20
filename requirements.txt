@@ -44,8 +44,9 @@ google-generativeai==0.8.3    # Gemini API client
 python-jose[cryptography]==3.3.0  # JWT token handling
 passlib[bcrypt]==1.7.4            # Password hashing
 
-# --- Logging ---
+# --- Logging & Monitoring ---
 structlog==24.4.0         # Structured logging (JSON logs, better than print/logging)
+prometheus-client==0.26.0 # Enterprise Prometheus metrics exporter and instrumentation
 
 # --- Environment Variables ---
 python-dotenv==1.0.1      # Load .env file into os.environ

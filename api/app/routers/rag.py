@@ -3,6 +3,7 @@ Policy RAG Chatbot and Query API Router.
 Handles contextual policy search, citations, multi-tier LLM answer synthesis, and query caching.
 """
 
+import contextlib
 import time
 from datetime import UTC, datetime
 
@@ -16,6 +17,7 @@ from api.app.schemas.rag import (
     PolicyQueryRequest,
 )
 from api.app.services.container import get_rag_cache, get_rag_service
+from api.app.services.metrics import metrics_collector
 from api.app.services.rag_cache import RAGQueryCache
 from api.app.services.rag_service import PolicyRAGService
 
@@ -48,6 +50,8 @@ def query_policy(
             top_k=request.top_k,
         )
         if cached_response is not None:
+            with contextlib.suppress(Exception):
+                metrics_collector.record_rag_query(status="success", cache_hit=True)
             return ApiResponse(
                 success=True,
                 data=cached_response,
@@ -99,6 +103,9 @@ def query_policy(
             top_k=request.top_k,
             response=response,
         )
+
+    with contextlib.suppress(Exception):
+        metrics_collector.record_rag_query(status="success", cache_hit=False)
 
     return ApiResponse(
         success=True,
