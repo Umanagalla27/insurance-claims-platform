@@ -1,0 +1,55 @@
+name: CI — Lint, Test, Build
+
+# WHY: This runs automatically on every PR and push to main.
+# It is the "gate" — if this fails, the PR cannot be merged.
+# This is the GitHub Actions part of our CI/CD pipeline.
+# Jenkins (Sprint 7) will do the same thing but runs on-premise.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run linter (ruff)
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest -v --cov=. --cov-report=xml
+        env:
+          APP_ENV: testing
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false   # Don't fail build if codecov is down

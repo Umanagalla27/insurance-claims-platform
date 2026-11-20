@@ -1,0 +1,35 @@
+# ============================================================
+# Insurance Claims Intelligence Platform
+# requirements-dev.txt — DEVELOPMENT & TESTING ONLY
+# ============================================================
+# These packages are NOT deployed to production.
+# Install with: pip install -r requirements-dev.txt
+#
+# This file extends requirements.txt:
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+# --- Testing Framework ---
+pytest==9.2.0             # Test runner (actual installed version Nov 2026)
+pytest-asyncio==0.26.0    # Async test support (for FastAPI async endpoints)
+pytest-cov==6.1.0         # Coverage reports
+httpx==0.28.0             # Also used in tests to call FastAPI test client
+
+# --- Code Quality ---
+ruff==0.17.5              # Fast linter + formatter (actual installed version)
+mypy==1.14.0              # Static type checker
+
+# --- Test Utilities ---
+faker==33.3.1             # Generate fake data in tests (actual installed version)
+factory-boy==3.3.1        # Test fixtures / factories
+
+# --- Notebook Support ---
+jupyter==1.1.1            # For ml/notebooks/ exploratory work
+ipykernel==6.29.5
+
+# --- Data Visualization (for notebooks and reports) ---
+matplotlib==3.10.0
+seaborn==0.13.2
+
+# --- Development Utilities ---
+pre-commit==4.0.1         # Git hooks: auto-run lint before every commit
+rich==14.0.0              # Pretty terminal output for scripts (actual installed)

@@ -1,0 +1,53 @@
+# ============================================================
+# Insurance Claims Intelligence Platform
+# requirements.txt — PRODUCTION dependencies
+# ============================================================
+# Rule: Only packages needed to RUN the application go here.
+# Dev/test tools go in requirements-dev.txt.
+
+# --- Web Framework (Mock API + Main API) ---
+fastapi==0.115.5          # Modern async Python web framework
+uvicorn[standard]==0.32.1 # ASGI server to run FastAPI apps
+python-multipart==0.0.12  # Required for FastAPI form data
+
+# --- Data Validation ---
+pydantic==2.10.1          # Data validation via Python type hints (FastAPI uses this internally)
+pydantic-settings==2.6.1  # Load config from .env files into Pydantic models
+
+# --- Database ---
+sqlalchemy==2.0.36        # ORM + raw SQL execution (we use both)
+pymysql==1.1.1            # MySQL driver (pure Python, easy to install on Windows)
+cryptography==44.0.0      # Required by pymysql for SSL connections
+
+# --- HTTP Client (for ETL to call Mock API) ---
+httpx==0.28.0             # Async HTTP client (better than requests for FastAPI ecosystem)
+tenacity==9.0.0           # Retry logic with exponential backoff (critical for real integrations)
+
+# --- Data Processing ---
+pandas==2.2.3             # Data manipulation for ETL transforms
+numpy==2.1.3              # Numerical operations
+
+# --- Machine Learning ---
+scikit-learn==1.5.2       # TF-IDF, Logistic Regression, SVM, Isolation Forest
+joblib==1.4.2             # Save/load ML model artifacts (used by scikit-learn internally)
+
+# --- NLP / Text Processing ---
+nltk==3.9.1               # Text preprocessing (stopwords, tokenization)
+
+# --- RAG / LLM (Sprint 5) ---
+faiss-cpu==1.9.0          # Vector similarity search (CPU version - no GPU needed)
+sentence-transformers==3.3.1  # Local embeddings (free, runs on CPU)
+google-generativeai==0.8.3    # Gemini API client
+
+# --- Security ---
+python-jose[cryptography]==3.3.0  # JWT token handling
+passlib[bcrypt]==1.7.4            # Password hashing
+
+# --- Logging ---
+structlog==24.4.0         # Structured logging (JSON logs, better than print/logging)
+
+# --- Environment Variables ---
+python-dotenv==1.0.1      # Load .env file into os.environ
+
+# --- AWS SDK (Sprint 7-8) ---
+boto3==1.35.74            # AWS SDK: S3, Lambda, CloudWatch interactions

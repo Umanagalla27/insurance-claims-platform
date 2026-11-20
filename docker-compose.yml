@@ -1,0 +1,40 @@
+# ============================================================
+# docker-compose.yml — Insurance Claims Intelligence Platform
+# ============================================================
+# WHY MEMORY LIMITS MATTER:
+#   On development machines with 8 GB RAM, unconstrained MySQL
+#   containers can consume 2-3 GB, freezing the host OS.
+#   We cap MySQL memory at 1024 MB to ensure smooth multi-tasking.
+# ============================================================
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: insurance_claims_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-insurance_claims_db}
+      MYSQL_USER: ${MYSQL_USER:-claims_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-claims_password_123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_123}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Automatically executes SQL migration scripts upon first container initialization
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: "1.0"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "claims_user", "-pclaims_password_123"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  mysql_data:
+    driver: local

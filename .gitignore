@@ -1,0 +1,120 @@
+# ============================================================
+# .gitignore for Insurance Claims Intelligence Platform
+# Python + Docker + Terraform + Windows
+# ============================================================
+
+# ----- SECRETS (CRITICAL — never commit these) -----
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*credentials*
+terraform.tfvars       # May contain AWS keys if not using env vars
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ----- Virtual Environments (venv + conda) -----
+venv/
+env/
+ENV/
+.venv/
+.env/
+# Conda env is managed globally by conda (not inside the project folder)
+# If using local conda env: add its path here
+# The active env name is documented in environment.yml below
+
+# ----- Testing & Coverage -----
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+
+# ----- MyPy -----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ----- Jupyter Notebooks -----
+.ipynb_checkpoints/
+
+# ----- ML Artifacts (too large for Git) -----
+ml/artifacts/
+*.pkl
+*.joblib
+*.h5
+*.bin
+faiss_index/
+
+# ----- Docker -----
+docker-compose.override.yml
+
+# ----- Terraform -----
+infrastructure/terraform/.terraform/
+infrastructure/terraform/.terraform.lock.hcl
+infrastructure/terraform/terraform.tfstate
+infrastructure/terraform/terraform.tfstate.backup
+infrastructure/terraform/*.tfplan
+# tfvars can have secrets — only commit .tfvars.example
+infrastructure/terraform/*.tfvars
+
+# ----- IDE / Editor -----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ----- Windows -----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ----- Mac (in case teammates use Mac) -----
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ----- Logs -----
+*.log
+logs/
+
+# ----- Data Files (synthetic data can be large) -----
+data/
+!data/**/.gitkeep
+data_generator/output/
+install_log.txt
+mock_api/data/*.json     # Generated at runtime; not committed
+# Exception: small seed/fixture files ARE committed
+!mock_api/data/seed_claims.json
+
+# ----- Power BI -----
+powerbi/*.pbix            # Binary, not diffable — track in separate storage
+# Keep the README and DAX docs
+!powerbi/README.md
+!powerbi/dax_measures.md

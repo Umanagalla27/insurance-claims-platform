@@ -1,0 +1,84 @@
+# ============================================================
+# environment.yml — Conda environment specification
+# ============================================================
+# This is the conda equivalent of requirements.txt.
+# When a new team member joins, they run:
+#   conda env create -f environment.yml
+#   conda activate insurance-claims
+#
+# To update this file after adding packages:
+#   conda env export --no-builds | grep -v "^prefix" > environment.yml
+#
+# WHY environment.yml instead of just requirements.txt?
+#   conda can manage non-Python dependencies too (like C libraries
+#   that FAISS and numpy depend on). On Windows, this matters a lot.
+# ============================================================
+
+name: insurance-claims
+
+channels:
+  - conda-forge    # Community packages (more up-to-date than defaults)
+  - defaults
+
+dependencies:
+  # --- Python version (locked) ---
+  - python=3.13
+
+  # --- C/system-level dependencies (conda handles these better than pip) ---
+  - pip            # pip itself
+
+  # --- Install remaining Python packages via pip ---
+  # We use pip for most packages because conda-forge sometimes lags behind PyPI
+  - pip:
+    # Web Framework
+    - fastapi==0.115.5
+    - uvicorn[standard]==0.32.1
+    - python-multipart==0.0.12
+
+    # Data Validation
+    - pydantic==2.10.1
+    - pydantic-settings==2.6.1
+
+    # Database
+    - sqlalchemy==2.0.36
+    - pymysql==1.1.1
+    - cryptography==44.0.0
+
+    # HTTP + Retry
+    - httpx==0.28.0
+    - tenacity==9.0.0
+
+    # Data
+    - pandas==2.2.3
+    - numpy==2.1.3
+
+    # ML
+    - scikit-learn==1.5.2
+    - joblib==1.4.2
+    - nltk==3.9.1
+
+    # RAG/LLM
+    - faiss-cpu==1.9.0
+    - sentence-transformers==3.3.1
+    - google-generativeai==0.8.3
+
+    # Security
+    - python-jose[cryptography]==3.3.0
+    - passlib[bcrypt]==1.7.4
+
+    # Logging + Config
+    - structlog==24.4.0
+    - python-dotenv==1.0.1
+
+    # AWS
+    - boto3==1.35.74
+
+    # --- Dev / Test (only installed in dev, not in Docker) ---
+    - pytest==8.3.4
+    - pytest-asyncio==0.24.0
+    - pytest-cov==6.0.0
+    - ruff==0.8.1
+    - faker==33.0.0
+    - rich==13.9.4
+    - matplotlib==3.9.3
+    - seaborn==0.13.2
