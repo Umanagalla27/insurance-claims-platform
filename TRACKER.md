@@ -33,7 +33,8 @@
 | Sprint 8 | 8.3 | ICIP-024 | CloudFormation Stack, CloudWatch Alarms, FinOps Budgets & Automated Teardown Guardrails: secondary CFn SNS alerts, metric alarms, $1 budget tripwire & zero-cost purge (111/111 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 9 | 9.1 | ICIP-025 | Star-Schema Warehouse Dimensional Views & Power BI Semantic Layer Modeling: conformed dimensions, fact views, DAX measures, Tabular Model & referential integrity (135/135 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 9 | 9.2 | ICIP-026 | Power BI / Metabase Executive & Operational Analytics Dashboards: 3-page layout specification, DAX guide & interactive HTML analytics report (143/143 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 9 | 9.3 | ICIP-027 | Automated Analytical Reports, CSV/Parquet Data Exports & Scheduled BI Snapshot Generators | 🔜 Next | — |
+| Sprint 9 | 9.3 | ICIP-027 | Automated Analytical Reports, CSV/Parquet Data Exports & Scheduled BI Snapshot Generators: Snappy Parquet (73% savings), SHA-256 manifests & executive briefings (152/152 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 10 | 10.1 | ICIP-028 | Production Health Probes, Prometheus Metrics Telemetry & CloudWatch Dashboard Integration | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
