@@ -54,3 +54,15 @@ variable "allowed_http_cidr" {
   type        = string
   default     = "0.0.0.0/0"
 }
+
+variable "monthly_budget_limit" {
+  description = "Monthly AWS spend limit in USD (FinOps ₹0 Free-Tier tripwire)"
+  type        = number
+  default     = 1.0
+}
+
+variable "alert_email" {
+  description = "Email destination for FinOps budget breaches and CloudWatch alarms"
+  type        = string
+  default     = "devops-alerts@insurance-intel.internal"
+}

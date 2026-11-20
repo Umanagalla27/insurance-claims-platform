@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Enterprise SNS Alerting and Notification Hub for Insurance Claims Intelligence Platform (ICIP).
+  Demonstrates CloudFormation secondary stack integration alongside Terraform IaC.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: insurance-claims-platform
+    Description: Name of the project used for naming and tagging.
+
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment tier.
+
+  AlertEmail:
+    Type: String
+    Default: devops-alerts@insurance-intel.internal
+    Description: Ops engineer email address for urgent CloudWatch alarm notifications.
+
+Resources:
+  # 1. Central SNS Alerting Topic for CloudWatch Alarms
+  PlatformAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-alerts-${Environment}"
+      DisplayName: Insurance Claims Critical Operations Alert Topic
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # 2. Ops Email Subscription
+  AlertEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref PlatformAlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  # 3. Topic Policy permitting CloudWatch / EventBridge to publish alarm events
+  PlatformAlertsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref PlatformAlertsTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudWatchAlarmsToPublish
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudwatch.amazonaws.com
+                - events.amazonaws.com
+            Action:
+              - sns:Publish
+            Resource: !Ref PlatformAlertsTopic
+
+Outputs:
+  TopicArn:
+    Description: ARN of the central SNS alerts topic
+    Value: !Ref PlatformAlertsTopic
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-AlertsTopicArn"
+
+  TopicName:
+    Description: Name of the central SNS alerts topic
+    Value: !GetAtt PlatformAlertsTopic.TopicName

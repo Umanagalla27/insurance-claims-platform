@@ -46,3 +46,18 @@ output "lambda_function_name" {
   description = "Name of the serverless claims ingestion trigger Lambda"
   value       = module.lambda_ingestion.lambda_function_name
 }
+
+output "ec2_cpu_alarm_arn" {
+  description = "ARN of the EC2 High CPU CloudWatch Alarm"
+  value       = module.cloudwatch_monitoring.ec2_cpu_alarm_arn
+}
+
+output "lambda_error_alarm_arn" {
+  description = "ARN of the Lambda Error CloudWatch Alarm"
+  value       = module.cloudwatch_monitoring.lambda_error_alarm_arn
+}
+
+output "finops_budget_name" {
+  description = "Name of the AWS FinOps zero-spend budget tripwire"
+  value       = aws_budgets_budget.zero_spend_guardrail.name
+}
