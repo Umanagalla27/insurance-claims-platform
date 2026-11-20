@@ -1,0 +1,61 @@
+# ==============================================================================
+# .dockerignore — Exclusion list for clean, minimal container build contexts
+# ==============================================================================
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local Testing and Temporary Outputs
+tests/
+api/tests/
+ml/tests/
+rag_chatbot/tests/
+*.log
+task-*.log
+temp/
+tmp/
+.temp/
+
+# IDE and Editor Metadata
+.vscode/
+.idea/
+.cursor/
+.gemini/
+*.swp
+*.swo
+*~
+
+# Raw Data and Big Dumps (keep only vector_store and manifests needed by runtime)
+data/raw/
+data/processed/*.csv
+data/staging/
+data/quarantine/
+data/warehouse/
+
+# Markdown Docs and Trackers (not needed inside production runtime image)
+*.md
+docs/
+architecture/
