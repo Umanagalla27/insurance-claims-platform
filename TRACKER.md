@@ -32,7 +32,8 @@
 | Sprint 8 | 8.2 | ICIP-023 | Event-Driven Serverless ETL Architecture: AWS Lambda ingestion trigger, S3 event notifications, dead-letter quarantine routing & Free-Tier 128MB sizing (99/99 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 8 | 8.3 | ICIP-024 | CloudFormation Stack, CloudWatch Alarms, FinOps Budgets & Automated Teardown Guardrails: secondary CFn SNS alerts, metric alarms, $1 budget tripwire & zero-cost purge (111/111 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 9 | 9.1 | ICIP-025 | Star-Schema Warehouse Dimensional Views & Power BI Semantic Layer Modeling: conformed dimensions, fact views, DAX measures, Tabular Model & referential integrity (135/135 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 9 | 9.2 | ICIP-026 | Power BI / Metabase Executive & Operational Analytics Dashboards: Loss ratio, fraud detection rates, RAG deflection & interactive filters | 🔜 Next | — |
+| Sprint 9 | 9.2 | ICIP-026 | Power BI / Metabase Executive & Operational Analytics Dashboards: 3-page layout specification, DAX guide & interactive HTML analytics report (143/143 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 9 | 9.3 | ICIP-027 | Automated Analytical Reports, CSV/Parquet Data Exports & Scheduled BI Snapshot Generators | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:

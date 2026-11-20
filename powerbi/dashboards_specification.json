@@ -1,0 +1,237 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/reportLayout/1.0.0/schema.json",
+  "id": "InsuranceClaimsIntelligencePlatformReport",
+  "name": "Insurance Claims Intelligence & Executive Analytics",
+  "version": "1.0.0",
+  "theme": "ExecutiveFinancialModern",
+  "defaultPageSize": {"width": 1280, "height": 720},
+  "pages": [
+    {
+      "id": "page_executive_overview",
+      "displayName": "Executive Claims & Portfolio Overview",
+      "ordinal": 1,
+      "slicers": [
+        {"name": "DateRangeSlicer", "field": "dim_date.calendar_year", "type": "Between"},
+        {"name": "RegionSlicer", "field": "dim_customer.us_region", "type": "Dropdown"},
+        {"name": "PolicyTypeSlicer", "field": "dim_policy.policy_type", "type": "Checkbox"}
+      ],
+      "visuals": [
+        {
+          "id": "kpi_total_incurred",
+          "type": "card",
+          "title": "Total Incurred Claims",
+          "measure": "[Total Incurred Claims]",
+          "format": "$#,##0.00",
+          "position": {"x": 20, "y": 60, "width": 230, "height": 110}
+        },
+        {
+          "id": "kpi_approved_payout",
+          "type": "card",
+          "title": "Approved Settlement Payouts",
+          "measure": "[Total Approved Payout]",
+          "format": "$#,##0.00",
+          "position": {"x": 270, "y": 60, "width": 230, "height": 110}
+        },
+        {
+          "id": "kpi_earned_premium",
+          "type": "card",
+          "title": "Total Earned Premium",
+          "measure": "[Total Earned Premium]",
+          "format": "$#,##0.00",
+          "position": {"x": 520, "y": 60, "width": 230, "height": 110}
+        },
+        {
+          "id": "kpi_loss_ratio",
+          "type": "gauge",
+          "title": "Underwriting Loss Ratio %",
+          "measure": "[Loss Ratio %]",
+          "format": "0.00%",
+          "target": 0.65,
+          "position": {"x": 770, "y": 60, "width": 230, "height": 110}
+        },
+        {
+          "id": "kpi_total_claims",
+          "type": "card",
+          "title": "Total Claims Filed",
+          "measure": "[Total Claims Filed]",
+          "format": "#,##0",
+          "position": {"x": 1020, "y": 60, "width": 230, "height": 110}
+        },
+        {
+          "id": "chart_monthly_trend",
+          "type": "lineAndClusteredColumnComboChart",
+          "title": "Monthly Incurred Losses vs Approved Payouts Trend",
+          "categoryAxis": "dim_date.month_short_name",
+          "columnValues": ["[Total Incurred Claims]", "[Total Approved Payout]"],
+          "lineValues": ["[Loss Ratio %]"],
+          "position": {"x": 20, "y": 190, "width": 730, "height": 260}
+        },
+        {
+          "id": "chart_category_share",
+          "type": "donutChart",
+          "title": "Claims Distribution by Category",
+          "category": "fact_claims_adjudication.claim_category",
+          "values": "[Total Incurred Claims]",
+          "position": {"x": 770, "y": 190, "width": 480, "height": 260}
+        },
+        {
+          "id": "chart_regional_performance",
+          "type": "barChart",
+          "title": "Claims Volume & Payouts by US Geographic Region",
+          "category": "dim_customer.us_region",
+          "values": "[Total Approved Payout]",
+          "position": {"x": 20, "y": 470, "width": 600, "height": 230}
+        },
+        {
+          "id": "table_portfolio_matrix",
+          "type": "matrix",
+          "title": "Underwriting Portfolio Performance by Coverage Tier & Premium Band",
+          "rows": ["dim_policy.coverage_tier"],
+          "columns": ["dim_policy.premium_band"],
+          "values": ["[Total Claims Filed]", "[Total Approved Payout]", "[Loss Ratio %]"],
+          "position": {"x": 640, "y": 470, "width": 610, "height": 230}
+        }
+      ]
+    },
+    {
+      "id": "page_fraud_mitigation",
+      "displayName": "Fraud Detection & Risk Loss Avoidance",
+      "ordinal": 2,
+      "slicers": [
+        {"name": "CategorySlicer", "field": "fact_claims_adjudication.claim_category", "type": "Dropdown"},
+        {"name": "CreditTierSlicer", "field": "dim_customer.credit_tier", "type": "Checkbox"}
+      ],
+      "visuals": [
+        {
+          "id": "kpi_fraud_count",
+          "type": "card",
+          "title": "Fraud Incidents Detected",
+          "measure": "[Fraud Incident Count]",
+          "format": "#,##0",
+          "position": {"x": 20, "y": 60, "width": 290, "height": 110}
+        },
+        {
+          "id": "kpi_fraud_rate",
+          "type": "card",
+          "title": "Portfolio Fraud Rate %",
+          "measure": "[Fraud Rate %]",
+          "format": "0.00%",
+          "position": {"x": 330, "y": 60, "width": 290, "height": 110}
+        },
+        {
+          "id": "kpi_fraud_savings",
+          "type": "card",
+          "title": "Fraud Loss Avoidance Savings",
+          "measure": "[Fraud Loss Avoidance $]",
+          "format": "$#,##0.00",
+          "position": {"x": 640, "y": 60, "width": 310, "height": 110}
+        },
+        {
+          "id": "kpi_high_anomaly_claims",
+          "type": "card",
+          "title": "Critical Anomaly Investigations",
+          "measure": "CALCULATE(COUNTROWS(fact_claims_adjudication), fact_claims_adjudication[is_fraud] = 1)",
+          "format": "#,##0",
+          "position": {"x": 970, "y": 60, "width": 280, "height": 110}
+        },
+        {
+          "id": "chart_fraud_treemap",
+          "type": "treemap",
+          "title": "Loss Avoidance by Detected Fraud Reason",
+          "category": "fact_claims_adjudication.fraud_reason",
+          "values": "[Fraud Loss Avoidance $]",
+          "position": {"x": 20, "y": 190, "width": 600, "height": 260}
+        },
+        {
+          "id": "chart_credit_tier_risk",
+          "type": "columnChart",
+          "title": "Fraud Incidence Rate by Customer Credit Tier",
+          "category": "dim_customer.credit_tier",
+          "values": "[Fraud Rate %]",
+          "position": {"x": 640, "y": 190, "width": 610, "height": 260}
+        },
+        {
+          "id": "table_fraud_audit",
+          "type": "table",
+          "title": "Top Flagged Fraud Claims Requiring Special Investigation Unit (SIU) Audit",
+          "columns": [
+            "fact_claims_adjudication.claim_id",
+            "fact_claims_adjudication.customer_id",
+            "fact_claims_adjudication.claim_category",
+            "fact_claims_adjudication.claim_amount",
+            "fact_claims_adjudication.fraud_reason",
+            "fact_claims_adjudication.claim_status"
+          ],
+          "position": {"x": 20, "y": 470, "width": 1230, "height": 230}
+        }
+      ]
+    },
+    {
+      "id": "page_operational_telemetry",
+      "displayName": "Operational Efficiency & AI Platform Telemetry",
+      "ordinal": 3,
+      "slicers": [
+        {"name": "PrioritySlicer", "field": "fact_claims_adjudication.claim_priority", "type": "Dropdown"}
+      ],
+      "visuals": [
+        {
+          "id": "kpi_stp_rate",
+          "type": "gauge",
+          "title": "Straight-Through-Processing (STP) Rate",
+          "measure": "[STP Rate %]",
+          "format": "0.00%",
+          "target": 0.15,
+          "position": {"x": 20, "y": 60, "width": 290, "height": 110}
+        },
+        {
+          "id": "kpi_stp_count",
+          "type": "card",
+          "title": "Touchless Automated Approvals",
+          "measure": "[STP Claims Count]",
+          "format": "#,##0",
+          "position": {"x": 330, "y": 60, "width": 290, "height": 110}
+        },
+        {
+          "id": "kpi_avg_lag",
+          "type": "card",
+          "title": "Average Settlement Lag",
+          "measure": "[Average Filing Lag Days]",
+          "format": "0.0 Days",
+          "position": {"x": 640, "y": 60, "width": 290, "height": 110}
+        },
+        {
+          "id": "kpi_approval_rate",
+          "type": "card",
+          "title": "Claim Approval Rate",
+          "measure": "[Approval Rate %]",
+          "format": "0.00%",
+          "position": {"x": 950, "y": 60, "width": 300, "height": 110}
+        },
+        {
+          "id": "chart_adjudication_funnel",
+          "type": "funnel",
+          "title": "Claims Adjudication Lifecycle Funnel",
+          "stages": ["Total Filed", "Validated Clean", "Approved Settlement", "Straight-Through Touchless"],
+          "values": ["COUNTROWS(fact_claims_adjudication)", "COUNTROWS(fact_claims_adjudication)", "[Approval Rate %]", "[STP Claims Count]"],
+          "position": {"x": 20, "y": 190, "width": 600, "height": 260}
+        },
+        {
+          "id": "chart_stp_by_priority",
+          "type": "barChart",
+          "title": "STP Touchless Approval Rate by Claim Priority",
+          "category": "fact_claims_adjudication.claim_priority",
+          "values": "[STP Rate %]",
+          "position": {"x": 640, "y": 190, "width": 610, "height": 260}
+        },
+        {
+          "id": "chart_lag_distribution",
+          "type": "lineChart",
+          "title": "Settlement Lag Distribution Across Claim Filing Timeline",
+          "category": "dim_date.month_short_name",
+          "values": "[Average Filing Lag Days]",
+          "position": {"x": 20, "y": 470, "width": 1230, "height": 230}
+        }
+      ]
+    }
+  ]
+}
