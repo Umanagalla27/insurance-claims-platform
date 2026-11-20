@@ -1,0 +1,240 @@
+{
+  "audit_timestamp": "2026-11-20T18:29:38.522081+00:00",
+  "baseline_dataset_id": "claims_clean_baseline",
+  "current_dataset_id": "simulated_inflation_catastrophe_batch",
+  "total_features_evaluated": 5,
+  "drifted_features_count": 3,
+  "critical_drift_count": 2,
+  "moderate_drift_count": 1,
+  "retraining_recommended": true,
+  "feature_results": {
+    "claim_amount": {
+      "feature_name": "claim_amount",
+      "feature_type": "continuous",
+      "psi_score": 0.11838,
+      "p_value": 6.900173699049637e-33,
+      "test_statistic": 0.1505322828593389,
+      "test_name": "Kolmogorov-Smirnov + PSI",
+      "severity": "MODERATE",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 2000,
+      "details": {
+        "num_bins_used": 10,
+        "expected_counts": [
+          911,
+          911,
+          910,
+          911,
+          910,
+          911,
+          911,
+          910,
+          911,
+          911
+        ],
+        "actual_counts": [
+          131,
+          172,
+          140,
+          132,
+          154,
+          243,
+          252,
+          149,
+          284,
+          343
+        ],
+        "psi_components": [
+          0.01462,
+          0.00212,
+          0.01065,
+          0.01415,
+          0.00597,
+          0.00417,
+          0.00599,
+          0.00746,
+          0.0147,
+          0.03853
+        ],
+        "ks_statistic": 0.15053,
+        "p_value": 0.0
+      }
+    },
+    "approved_amount": {
+      "feature_name": "approved_amount",
+      "feature_type": "continuous",
+      "psi_score": 0.04476,
+      "p_value": 2.5794972652699086e-08,
+      "test_statistic": 0.0919250346881289,
+      "test_name": "Kolmogorov-Smirnov + PSI",
+      "severity": "NONE",
+      "baseline_sample_count": 5897,
+      "current_sample_count": 1306,
+      "details": {
+        "num_bins_used": 9,
+        "expected_counts": [
+          1180,
+          589,
+          590,
+          589,
+          590,
+          590,
+          589,
+          590,
+          590
+        ],
+        "actual_counts": [
+          238,
+          104,
+          113,
+          104,
+          118,
+          166,
+          112,
+          159,
+          192
+        ],
+        "psi_components": [
+          0.00167,
+          0.00459,
+          0.00196,
+          0.00459,
+          0.00099,
+          0.00648,
+          0.00215,
+          0.00426,
+          0.01807
+        ],
+        "ks_statistic": 0.09193,
+        "p_value": 0.0
+      }
+    },
+    "claim_category": {
+      "feature_name": "claim_category",
+      "feature_type": "categorical",
+      "psi_score": 0.37422,
+      "p_value": 2.5584485252696926e-147,
+      "test_statistic": 697.1216475964458,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "CRITICAL",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 2000,
+      "details": {
+        "Auto": {
+          "expected_pct": 0.3008,
+          "actual_pct": 0.192,
+          "psi_component": 0.04881
+        },
+        "Disability": {
+          "expected_pct": 0.0505,
+          "actual_pct": 0.031,
+          "psi_component": 0.00952
+        },
+        "Liability": {
+          "expected_pct": 0.1004,
+          "actual_pct": 0.0625,
+          "psi_component": 0.01793
+        },
+        "Life": {
+          "expected_pct": 0.0306,
+          "actual_pct": 0.018,
+          "psi_component": 0.00672
+        },
+        "Medical": {
+          "expected_pct": 0.2429,
+          "actual_pct": 0.1655,
+          "psi_component": 0.02969
+        },
+        "Property": {
+          "expected_pct": 0.204,
+          "actual_pct": 0.488,
+          "psi_component": 0.24766
+        },
+        "Travel": {
+          "expected_pct": 0.0708,
+          "actual_pct": 0.043,
+          "psi_component": 0.01388
+        },
+        "chi2_statistic": 697.1216,
+        "p_value": 0.0
+      }
+    },
+    "claim_priority": {
+      "feature_name": "claim_priority",
+      "feature_type": "categorical",
+      "psi_score": 6.20035,
+      "p_value": 0.0,
+      "test_statistic": 3397.289341459403,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "CRITICAL",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 2000,
+      "details": {
+        "HIGH": {
+          "expected_pct": 0.0,
+          "actual_pct": 0.35,
+          "psi_component": 6.04706
+        },
+        "High": {
+          "expected_pct": 0.1533,
+          "actual_pct": 0.0875,
+          "psi_component": 0.03689
+        },
+        "Low": {
+          "expected_pct": 0.3965,
+          "actual_pct": 0.259,
+          "psi_component": 0.05856
+        },
+        "Medium": {
+          "expected_pct": 0.4502,
+          "actual_pct": 0.3035,
+          "psi_component": 0.05785
+        },
+        "chi2_statistic": 3397.2893,
+        "p_value": 0.0
+      }
+    },
+    "status": {
+      "feature_name": "status",
+      "feature_type": "categorical",
+      "psi_score": 0.00053,
+      "p_value": 0.9286686829774607,
+      "test_statistic": 0.8711085243833389,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "NONE",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 2000,
+      "details": {
+        "Approved": {
+          "expected_pct": 0.3498,
+          "actual_pct": 0.3555,
+          "psi_component": 9e-05
+        },
+        "Closed": {
+          "expected_pct": 0.2005,
+          "actual_pct": 0.205,
+          "psi_component": 0.0001
+        },
+        "Pending": {
+          "expected_pct": 0.1528,
+          "actual_pct": 0.152,
+          "psi_component": 0.0
+        },
+        "Rejected": {
+          "expected_pct": 0.0972,
+          "actual_pct": 0.0925,
+          "psi_component": 0.00023
+        },
+        "Under Review": {
+          "expected_pct": 0.1996,
+          "actual_pct": 0.195,
+          "psi_component": 0.00011
+        },
+        "chi2_statistic": 0.8711,
+        "p_value": 0.928669
+      }
+    }
+  },
+  "target_model_name": "NLP Claim Domain Classifier",
+  "retraining_triggered": true
+}

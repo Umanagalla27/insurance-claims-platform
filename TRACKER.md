@@ -35,7 +35,8 @@
 | Sprint 9 | 9.2 | ICIP-026 | Power BI / Metabase Executive & Operational Analytics Dashboards: 3-page layout specification, DAX guide & interactive HTML analytics report (143/143 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 9 | 9.3 | ICIP-027 | Automated Analytical Reports, CSV/Parquet Data Exports & Scheduled BI Snapshot Generators: Snappy Parquet (73% savings), SHA-256 manifests & executive briefings (152/152 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 10 | 10.1 | ICIP-028 | Production Health Probes, Prometheus Metrics Telemetry & CloudWatch Dashboard Integration: /health/live, /health/ready, Prometheus exposition /metrics, Alertmanager rules & CloudWatch executive dashboard (164/164 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 10 | 10.2 | ICIP-029 | MLOps Model Governance, Data & Prediction Drift Detection, and Retraining Triggers | 🔜 Next | — |
+| Sprint 10 | 10.2 | ICIP-029 | MLOps Model Governance, Data & Prediction Drift Detection, and Retraining Triggers: KS test, continuous/categorical PSI, JSON Model Registry, automated retraining triggers & candidate staging (173/173 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 10 | 10.3 | ICIP-030 | Comprehensive End-to-End Documentation, Production Runbooks & Portfolio Capstone Polish | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:

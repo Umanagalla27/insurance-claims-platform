@@ -1,0 +1,235 @@
+{
+  "audit_timestamp": "2026-11-20T18:28:47.214782+00:00",
+  "baseline_dataset_id": "clean_claims_baseline",
+  "current_dataset_id": "simulated_q4_inference_batch",
+  "total_features_evaluated": 5,
+  "drifted_features_count": 2,
+  "critical_drift_count": 1,
+  "moderate_drift_count": 1,
+  "retraining_recommended": true,
+  "feature_results": {
+    "claim_amount": {
+      "feature_name": "claim_amount",
+      "feature_type": "continuous",
+      "psi_score": 0.12781,
+      "p_value": 3.7655060440294393e-28,
+      "test_statistic": 0.1569185608140259,
+      "test_name": "Kolmogorov-Smirnov + PSI",
+      "severity": "MODERATE",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 1500,
+      "details": {
+        "num_bins_used": 10,
+        "expected_counts": [
+          911,
+          911,
+          910,
+          911,
+          910,
+          911,
+          911,
+          910,
+          911,
+          911
+        ],
+        "actual_counts": [
+          90,
+          125,
+          107,
+          101,
+          112,
+          174,
+          195,
+          115,
+          225,
+          256
+        ],
+        "psi_components": [
+          0.02046,
+          0.00305,
+          0.00964,
+          0.01294,
+          0.00736,
+          0.00236,
+          0.00785,
+          0.00616,
+          0.02024,
+          0.03773
+        ],
+        "ks_statistic": 0.15692,
+        "p_value": 0.0
+      }
+    },
+    "approved_amount": {
+      "feature_name": "approved_amount",
+      "feature_type": "continuous",
+      "psi_score": 0.01018,
+      "p_value": 0.5171931019831235,
+      "test_statistic": 0.02793866920704846,
+      "test_name": "Kolmogorov-Smirnov + PSI",
+      "severity": "NONE",
+      "baseline_sample_count": 5897,
+      "current_sample_count": 981,
+      "details": {
+        "num_bins_used": 9,
+        "expected_counts": [
+          1180,
+          589,
+          590,
+          589,
+          590,
+          590,
+          589,
+          590,
+          590
+        ],
+        "actual_counts": [
+          179,
+          98,
+          114,
+          86,
+          88,
+          116,
+          104,
+          98,
+          98
+        ],
+        "psi_components": [
+          0.00163,
+          0.0,
+          0.00242,
+          0.00159,
+          0.00113,
+          0.00304,
+          0.00037,
+          0.0,
+          0.0
+        ],
+        "ks_statistic": 0.02794,
+        "p_value": 0.517193
+      }
+    },
+    "claim_category": {
+      "feature_name": "claim_category",
+      "feature_type": "categorical",
+      "psi_score": 0.45892,
+      "p_value": 5.7979042290205254e-145,
+      "test_statistic": 686.2122066718119,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "CRITICAL",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 1500,
+      "details": {
+        "Auto": {
+          "expected_pct": 0.3008,
+          "actual_pct": 0.172,
+          "psi_component": 0.07195
+        },
+        "Disability": {
+          "expected_pct": 0.0505,
+          "actual_pct": 0.028,
+          "psi_component": 0.01328
+        },
+        "Liability": {
+          "expected_pct": 0.1004,
+          "actual_pct": 0.0613,
+          "psi_component": 0.01922
+        },
+        "Life": {
+          "expected_pct": 0.0306,
+          "actual_pct": 0.0153,
+          "psi_component": 0.01059
+        },
+        "Medical": {
+          "expected_pct": 0.2429,
+          "actual_pct": 0.1707,
+          "psi_component": 0.02549
+        },
+        "Property": {
+          "expected_pct": 0.204,
+          "actual_pct": 0.518,
+          "psi_component": 0.29256
+        },
+        "Travel": {
+          "expected_pct": 0.0708,
+          "actual_pct": 0.0347,
+          "psi_component": 0.02583
+        },
+        "chi2_statistic": 686.2122,
+        "p_value": 0.0
+      }
+    },
+    "claim_priority": {
+      "feature_name": "claim_priority",
+      "feature_type": "categorical",
+      "psi_score": 0.00105,
+      "p_value": 0.5154342510623395,
+      "test_statistic": 1.325491055341064,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "NONE",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 1500,
+      "details": {
+        "High": {
+          "expected_pct": 0.1533,
+          "actual_pct": 0.142,
+          "psi_component": 0.00086
+        },
+        "Low": {
+          "expected_pct": 0.3965,
+          "actual_pct": 0.4047,
+          "psi_component": 0.00017
+        },
+        "Medium": {
+          "expected_pct": 0.4502,
+          "actual_pct": 0.4533,
+          "psi_component": 2e-05
+        },
+        "chi2_statistic": 1.3255,
+        "p_value": 0.515434
+      }
+    },
+    "status": {
+      "feature_name": "status",
+      "feature_type": "categorical",
+      "psi_score": 0.00102,
+      "p_value": 0.8589551720117926,
+      "test_statistic": 1.314238489281768,
+      "test_name": "Chi-Square Contingency + Categorical PSI",
+      "severity": "NONE",
+      "baseline_sample_count": 9107,
+      "current_sample_count": 1500,
+      "details": {
+        "Approved": {
+          "expected_pct": 0.3498,
+          "actual_pct": 0.352,
+          "psi_component": 1e-05
+        },
+        "Closed": {
+          "expected_pct": 0.2005,
+          "actual_pct": 0.2107,
+          "psi_component": 0.0005
+        },
+        "Pending": {
+          "expected_pct": 0.1528,
+          "actual_pct": 0.1487,
+          "psi_component": 0.00012
+        },
+        "Rejected": {
+          "expected_pct": 0.0972,
+          "actual_pct": 0.0913,
+          "psi_component": 0.00036
+        },
+        "Under Review": {
+          "expected_pct": 0.1996,
+          "actual_pct": 0.1973,
+          "psi_component": 3e-05
+        },
+        "chi2_statistic": 1.3142,
+        "p_value": 0.858955
+      }
+    }
+  },
+  "target_model_name": "NLP Claim Domain Classifier",
+  "retraining_triggered": true
+}
