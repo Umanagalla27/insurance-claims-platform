@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 
 from api.app.config import settings
 from api.app.middleware.errors import setup_exception_handlers
@@ -63,6 +65,14 @@ def create_app() -> FastAPI:
     app.include_router(rag_router, prefix=settings.API_V1_PREFIX)
     # Convenience liveness alias at root /health for Kubernetes / AWS Target Groups
     app.include_router(health_router, prefix="")
+
+    # 5. Mount Unified Web Portal at root /
+    web_index_path = Path(__file__).resolve().parent.parent.parent / "web" / "index.html"
+    if web_index_path.is_file():
+        @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+        async def serve_portal() -> FileResponse:
+            """Serve the unified enterprise web portal."""
+            return FileResponse(web_index_path, media_type="text/html")
 
     logger.info(
         "FastAPI application created with API prefix: %s", settings.API_V1_PREFIX

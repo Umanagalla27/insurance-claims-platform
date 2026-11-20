@@ -171,3 +171,7 @@ def test_app_routes_registered():
     assert "/api/v1/ready" in openapi_paths
     assert "/api/v1/metrics" in openapi_paths
     assert "/health" in openapi_paths
+
+    # Root web portal route check
+    route_paths = [getattr(r, "path", "") for r in app.routes]
+    assert "/" in route_paths

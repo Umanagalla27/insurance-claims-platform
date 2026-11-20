@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insurance Claims Intelligence Platform (ICIP)</title>
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+            dark: {
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3); }
+    .tab-active { border-bottom: 2px solid #6366f1; color: #818cf8 !important; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-dark-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- TOP APP BAR -->
+  <header class="glass sticky top-0 z-50 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 flex items-center justify-center text-white shadow-lg glow-indigo">
+          <i class="fa-solid fa-shield-halved text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center space-x-2">
+            <span>Insurance Claims Intelligence Platform</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">ICIP v1.0</span>
+          </h1>
+          <p class="text-xs text-slate-400">Gen AI & Multi-Model Claims Platform — Built by Uma</p>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Status Badges -->
+      <div class="flex items-center space-x-4">
+        <div id="backend-status" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="backend-label">All Systems Ready (173 Tests)</span>
+        </div>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+          <i class="fa-solid fa-book-bookmark text-brand-400"></i>
+          <span>API Docs</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8 text-sm overflow-x-auto scrollbar-none">
+      <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="py-3 px-1 text-slate-400 hover:text-slate-200 tab-active flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Executive BI & Analytics</span>
+      </button>
+      <button onclick="switchTab('tab-adjudicator')" id="btn-tab-adjudicator" class="py-3 px-1 text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
+        <span>Live Claims Adjudicator</span>
+      </button>
+      <button onclick="switchTab('tab-rag')" id="btn-tab-rag" class="py-3 px-1 text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-robot text-cyan-400"></i>
+        <span>Policy RAG AI Chatbot</span>
+      </button>
+      <button onclick="switchTab('tab-mlops')" id="btn-tab-mlops" class="py-3 px-1 text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-microchip text-purple-400"></i>
+        <span>MLOps Governance & Drift</span>
+      </button>
+      <button onclick="switchTab('tab-architecture')" id="btn-tab-architecture" class="py-3 px-1 text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-network-wired text-emerald-400"></i>
+        <span>Architecture & Cloud</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: EXECUTIVE BI & FINANCIAL ANALYTICS                             -->
+    <!-- ===================================================================== -->
+    <section id="tab-dashboard" class="space-y-6">
+      <!-- Hero Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Incurred Liability -->
+        <div class="glass p-5 rounded-2xl relative overflow-hidden group hover:border-brand-500/40 transition">
+          <div class="absolute -right-4 -bottom-4 text-slate-800 text-7xl opacity-40 group-hover:scale-110 transition"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <p class="text-xs font-semibold text-slate-400 tracking-wider uppercase">Incurred Liability</p>
+          <h3 class="text-2xl font-bold text-white mt-1">$1,544,882,385</h3>
+          <p class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
+            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> 9,107 Claims</span>
+            <span>across 7 Categories</span>
+          </p>
+        </div>
+
+        <!-- Fraud Protected -->
+        <div class="glass p-5 rounded-2xl relative overflow-hidden group hover:border-rose-500/40 transition border-rose-500/20">
+          <div class="absolute -right-4 -bottom-4 text-rose-950 text-7xl opacity-40 group-hover:scale-110 transition"><i class="fa-solid fa-shield-virus"></i></div>
+          <p class="text-xs font-semibold text-rose-300 tracking-wider uppercase">Fraud Loss Avoidance</p>
+          <h3 class="text-2xl font-bold text-rose-400 mt-1">$69,641,502</h3>
+          <p class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
+            <span class="text-rose-400 font-semibold">436 Flagged (4.79%)</span>
+            <span>via Isolation Forest</span>
+          </p>
+        </div>
+
+        <!-- Approved Settlements -->
+        <div class="glass p-5 rounded-2xl relative overflow-hidden group hover:border-emerald-500/40 transition">
+          <div class="absolute -right-4 -bottom-4 text-emerald-950 text-7xl opacity-40 group-hover:scale-110 transition"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+          <p class="text-xs font-semibold text-emerald-300 tracking-wider uppercase">Approved Settlements</p>
+          <h3 class="text-2xl font-bold text-emerald-400 mt-1">$769,590,253</h3>
+          <p class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
+            <span class="text-emerald-400 font-semibold">49.8% Loss Ratio</span>
+            <span>within Actuarial Bands</span>
+          </p>
+        </div>
+
+        <!-- Straight-Through-Processing -->
+        <div class="glass p-5 rounded-2xl relative overflow-hidden group hover:border-cyan-500/40 transition">
+          <div class="absolute -right-4 -bottom-4 text-cyan-950 text-7xl opacity-40 group-hover:scale-110 transition"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <p class="text-xs font-semibold text-cyan-300 tracking-wider uppercase">Touchless STP Approvals</p>
+          <h3 class="text-2xl font-bold text-cyan-400 mt-1">472 Claims (5.18%)</h3>
+          <p class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
+            <span class="text-cyan-400 font-semibold">Zero-Touch Settlement</span>
+            <span>in &lt; 5 mins</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Claims Volume by Domain -->
+        <div class="glass p-6 rounded-2xl">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-chart-column text-brand-400"></i>
+              <span>Claims Volume & Distribution by Policy Domain</span>
+            </h4>
+            <span class="text-xs text-slate-400">Total: 9,107 Claims</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <!-- Fraud vs Legitimate Incurred Liability -->
+        <div class="glass p-6 rounded-2xl">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-chart-pie text-rose-400"></i>
+              <span>Financial Exposure & ML Fraud Protection</span>
+            </h4>
+            <span class="text-xs text-slate-400">$69.6M Protected</span>
+          </div>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-fraud-exposure"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly Claims Adjudication Trend -->
+        <div class="glass p-6 rounded-2xl">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i>
+              <span>Settlement Liability Trend & Adjudication Volume</span>
+            </h4>
+            <span class="text-xs text-emerald-400 font-medium">Mean Lag: 22.2 Days</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chart-timeline"></canvas>
+          </div>
+        </div>
+
+        <!-- Columnar Snappy Storage Benchmark -->
+        <div class="glass p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+                <i class="fa-solid fa-database text-cyan-400"></i>
+                <span>Columnar Snappy Parquet Compression Benchmark</span>
+              </h4>
+              <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">-73.1% Disk Reduction</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Comparison between traditional row-oriented CSV analytical warehouse dumps and our Snappy-compressed Apache Parquet semantic snapshots.
+            </p>
+          </div>
+
+          <div class="space-y-4 my-4">
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-slate-400">Raw Fact Adjudication CSV</span>
+                <span class="text-slate-300">1,066.8 KB (100%)</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-3">
+                <div class="bg-slate-500 h-3 rounded-full" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-cyan-400">Snappy Parquet Columnar Snapshot</span>
+                <span class="text-emerald-400 font-bold">286.5 KB (26.9%)</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-3">
+                <div class="bg-gradient-to-r from-brand-500 to-cyan-400 h-3 rounded-full" style="width: 26.9%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+            <span class="text-slate-400"><i class="fa-solid fa-fingerprint text-brand-400 mr-1.5"></i>SHA-256 Manifest:</span>
+            <code class="text-slate-300">e8f192b0...49a1</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: LIVE CLAIMS ADJUDICATOR (INTERACTIVE MULTI-MODEL ML)          -->
+    <!-- ===================================================================== -->
+    <section id="tab-adjudicator" class="hidden space-y-6">
+      <div class="glass p-6 rounded-2xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-brain text-brand-400"></i>
+              <span>Multi-Model AI Claim Adjudication Engine</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Runs TF-IDF NLP classification + Isolation Forest fraud detection + policy underwriting rules in real time.</p>
+          </div>
+
+          <!-- Sample Pre-fills -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-400 font-medium">Quick Samples:</span>
+            <button onclick="prefillClaim('auto_clean')" class="px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+              🚗 Routine Auto Fender
+            </button>
+            <button onclick="prefillClaim('property_fraud')" class="px-2.5 py-1 text-xs rounded-lg bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 transition">
+              🔥 Suspicious Fire Claim
+            </button>
+            <button onclick="prefillClaim('medical_clean')" class="px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+              🏥 Medical Specialist
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
+          <!-- Input Form -->
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Claim Incident Narrative & Description</label>
+              <textarea id="claim-text" rows="4" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500 transition" placeholder="Describe the incident details, damages, and circumstance..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Claim Amount ($)</label>
+                <input id="claim-amount" type="number" step="50" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 transition" value="1450">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Coverage Limit ($)</label>
+                <input id="claim-coverage" type="number" step="1000" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 transition" value="50000">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Claimant Credit Score (300-850): <span id="credit-score-label" class="text-brand-400 font-bold">750</span></label>
+                <input id="claim-credit" type="range" min="300" max="850" value="750" class="w-full accent-indigo-500" oninput="document.getElementById('credit-score-label').innerText = this.value">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Days to File (Lag Days)</label>
+                <input id="claim-lag" type="number" min="0" max="90" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 transition" value="3">
+              </div>
+            </div>
+
+            <button onclick="executeClaimAdjudication()" id="btn-adjudicate" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg glow-indigo transition flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Evaluate Claim with Multi-Model AI</span>
+            </button>
+          </div>
+
+          <!-- Decision Output Panel -->
+          <div class="lg:col-span-5 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">Adjudication Verdict</span>
+                <span id="adjudication-latency" class="text-xs text-slate-400">Latency: -- ms</span>
+              </div>
+
+              <!-- Main Decision Badge -->
+              <div id="verdict-container" class="my-4 p-4 rounded-xl text-center bg-slate-800/80 border border-slate-700">
+                <div id="verdict-badge" class="text-lg font-extrabold text-slate-300">
+                  <i class="fa-solid fa-hourglass-start mr-1.5"></i>
+                  Awaiting Input
+                </div>
+                <p id="verdict-description" class="text-xs text-slate-400 mt-1">Submit claim details to execute binding adjudication recommendation.</p>
+              </div>
+
+              <!-- Model Output Gauges -->
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs font-medium mb-1">
+                    <span class="text-slate-400">NLP Predicted Category:</span>
+                    <span id="nlp-category" class="text-brand-300 font-bold">--</span>
+                  </div>
+                  <div class="w-full bg-slate-800 rounded-full h-2">
+                    <div id="nlp-bar" class="bg-brand-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs font-medium mb-1">
+                    <span class="text-slate-400">Isolation Forest Risk Score:</span>
+                    <span id="risk-score" class="font-bold">--</span>
+                  </div>
+                  <div class="w-full bg-slate-800 rounded-full h-2">
+                    <div id="risk-bar" class="h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reasons List -->
+              <div class="mt-4 pt-3 border-t border-slate-800">
+                <span class="text-xs font-semibold text-slate-400 block mb-1.5">Underwriting Rationale & Risk Factors:</span>
+                <ul id="rationale-list" class="text-xs space-y-1 text-slate-300">
+                  <li class="text-slate-500 italic">No evaluation performed yet.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div id="supervisor-flag" class="mt-4 p-2.5 rounded-lg bg-slate-800/50 border border-slate-700/50 flex items-center space-x-2 text-xs text-slate-400">
+              <i class="fa-solid fa-info-circle text-slate-400"></i>
+              <span>Supervisor Approval: <strong id="supervisor-status">Not Required</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: POLICY RAG AI CHATBOT                                         -->
+    <!-- ===================================================================== -->
+    <section id="tab-rag" class="hidden space-y-6">
+      <div class="glass p-6 rounded-2xl flex flex-col h-[650px]">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
+              <i class="fa-solid fa-comments text-base"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white">Policy Knowledge Base RAG Assistant</h3>
+              <p class="text-xs text-slate-400">Hybrid BM25 + FAISS Dense Search over 66 Clauses with Grounded Citations</p>
+            </div>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
+            <i class="fa-solid fa-bolt text-amber-400 mr-1"></i>Gemini Flash + Ollama
+          </span>
+        </div>
+
+        <!-- Prompt Suggestions -->
+        <div class="py-3 flex flex-wrap gap-2 border-b border-slate-800/50">
+          <button onclick="askRag('What is the deductible for commercial vehicle collision coverage?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            🚗 Collision Deductibles?
+          </button>
+          <button onclick="askRag('Are water damage and sewer backups covered in Property policies?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            🏠 Property Flood Coverage?
+          </button>
+          <button onclick="askRag('What is the waiting period for disability income claims?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            ⏱️ Disability Elimination Period?
+          </button>
+          <button onclick="askRag('What exclusions apply to high-altitude mountaineering in travel insurance?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            🏔️ Travel Adventure Exclusions?
+          </button>
+        </div>
+
+        <!-- Chat Scrollable Box -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+          <!-- Initial Assistant Greeting -->
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-xs shrink-0">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl rounded-tl-none max-w-2xl text-xs text-slate-200 leading-relaxed space-y-2">
+              <p>Hello! I am your <strong>ICIP Policy Intelligence Assistant</strong>. You can ask me any question regarding official policy coverage terms, deductibles, waiting periods, and exclusions.</p>
+              <p class="text-slate-400">Every response is strictly grounded in our official contractual clauses with explicit citations.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="pt-4 border-t border-slate-800 flex items-center space-x-2">
+          <input id="rag-input" type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 transition" placeholder="Ask any question regarding policy clauses, deductibles, or terms..." onkeydown="if(event.key === 'Enter') submitRagQuery()">
+          <button onclick="submitRagQuery()" class="px-5 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-lg transition flex items-center space-x-1.5">
+            <span>Send</span>
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: MLOPS GOVERNANCE & DRIFT MONITOR                              -->
+    <!-- ===================================================================== -->
+    <section id="tab-mlops" class="hidden space-y-6">
+      <div class="glass p-6 rounded-2xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-microchip text-purple-400"></i>
+              <span>MLOps Model Governance & Statistical Drift Monitor</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Monitors Kolmogorov-Smirnov p-values and Population Stability Index (PSI) against production baselines.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="triggerDriftSimulation()" id="btn-drift-sim" class="px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 text-xs font-semibold transition">
+              <i class="fa-solid fa-flask-vial mr-1.5"></i>Simulate Covariate Shift
+            </button>
+          </div>
+        </div>
+
+        <!-- Feature Drift Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Feature Name</th>
+                <th class="py-3 px-4">Type</th>
+                <th class="py-3 px-4">PSI Score</th>
+                <th class="py-3 px-4">p-Value</th>
+                <th class="py-3 px-4">Test Name</th>
+                <th class="py-3 px-4">Drift Severity</th>
+                <th class="py-3 px-4">Action</th>
+              </tr>
+            </thead>
+            <tbody id="drift-tbody" class="divide-y divide-slate-800/60">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Governed Model Registry -->
+        <div class="pt-4 border-t border-slate-800">
+          <h4 class="text-sm font-bold text-white mb-3 flex items-center space-x-2">
+            <i class="fa-solid fa-box-archive text-brand-400"></i>
+            <span>Active Model Lineage Registry (ml/artifacts/model_registry.json)</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Model 1 -->
+            <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-white">NLP Claim Domain Classifier</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PRODUCTION</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2 font-mono">v1.0.0 (SHA: e4b52ab)</p>
+              <div class="mt-3 text-xs space-y-1 text-slate-300">
+                <p>Accuracy: <strong class="text-emerald-400">100.0%</strong> (7 Classes)</p>
+                <p>p50 Latency: <strong class="text-cyan-400">1.18ms</strong></p>
+              </div>
+            </div>
+
+            <!-- Model 2 -->
+            <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-white">Isolation Forest Fraud Detector</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PRODUCTION</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2 font-mono">v1.0.0 (SHA: 89c1df3)</p>
+              <div class="mt-3 text-xs space-y-1 text-slate-300">
+                <p>ROC-AUC: <strong class="text-emerald-400">0.8349</strong> (10 Features)</p>
+                <p>Protected: <strong class="text-rose-400">$69.6M</strong></p>
+              </div>
+            </div>
+
+            <!-- Model 3 Candidate -->
+            <div id="staged-candidate-card" class="bg-slate-900/80 border border-amber-500/30 p-4 rounded-xl">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-white">Auto-Retrained Candidate</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">STAGING</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2 font-mono">v1.1.0-candidate</p>
+              <div class="mt-3 text-xs space-y-1 text-slate-300">
+                <p>Trigger: <strong class="text-amber-400">PSI &gt;= 0.25 Policy</strong></p>
+                <p>Status: <strong class="text-slate-300">Awaiting Canary Review</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 5: ARCHITECTURE, CLOUD & LIVE TELEMETRY                          -->
+    <!-- ===================================================================== -->
+    <section id="tab-architecture" class="hidden space-y-6">
+      <div class="glass p-6 rounded-2xl space-y-6">
+        <div class="pb-4 border-b border-slate-800">
+          <h3 class="text-base font-bold text-white flex items-center space-x-2">
+            <i class="fa-solid fa-network-wired text-emerald-400"></i>
+            <span>End-to-End System Architecture Topology</span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Full 10-Sprint microservice flow from Mock API ingestion to AWS deployment.</p>
+        </div>
+
+        <!-- Interactive Diagram Box -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs overflow-x-auto">
+          <pre class="text-slate-300 leading-relaxed font-mono">
+[External Mock API] ---tenacity exponential backoff---> [Resilient ETL Ingestor]
+                                                              |
+                                                    (Pydantic Cleansing)
+                                                              |
+                                           +------------------+------------------+
+                                           |                                     |
+                                [Clean 9,107 Claims]                  [Quarantine 1,193]
+                                           |                                     |
+                                           v                                     v
+                                [MySQL 8.4 Warehouse]                [claims_rejected]
+                           (Covering Indexes: 8.94x speed)
+                                           |
+                    +----------------------+----------------------+
+                    |                                             |
+                    v                                             v
+        [Dual-Model ML Pipeline]                     [Policy Hybrid RAG Engine]
+     - TF-IDF Classifier (1.18ms)                 - Clause-aware Chunker (66 Chunks)
+     - Isolation Forest (ROC: 0.835)              - BM25 + FAISS Dense Search (RRF)
+                    |                                             |
+                    +----------------------+----------------------+
+                                           |
+                                           v
+                              [FastAPI Gateway :8000]
+                           - Pure ASGI Timing Middleware
+                           - Prometheus Telemetry (/metrics)
+                           - Docker Compose (2.25GB Guardrail)
+                           - AWS EC2 t2.micro + S3 + Lambda
+          </pre>
+        </div>
+
+        <!-- Live Subsystem Health Probes Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-300">Liveness Probe</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 font-mono">GET /health/live</p>
+            <p class="text-xs text-emerald-400 font-bold mt-1">200 OK (Process Responsive)</p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-300">Readiness Probe</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 font-mono">GET /health/ready</p>
+            <p class="text-xs text-emerald-400 font-bold mt-1">3/3 Subsystems Loaded</p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-300">FinOps Budget</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 font-mono">$1.00 USD Monthly Tripwire</p>
+            <p class="text-xs text-emerald-400 font-bold mt-1">$0.00 Incurred (Free Tier)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 glass py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>Insurance Claims Intelligence Platform (ICIP) — 10 Sprints Completed | 173 Passing Tests</p>
+      <p class="text-slate-400">Built by Uma • Senior / Staff Gen AI Platform Engineer Portfolio</p>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- CLIENT JAVASCRIPT: LOGIC, CHARTS & INTELLIGENCE ENGINES               -->
+  <!-- ===================================================================== -->
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      const tabs = ['tab-dashboard', 'tab-adjudicator', 'tab-rag', 'tab-mlops', 'tab-architecture'];
+      tabs.forEach(t => {
+        const el = document.getElementById(t);
+        const btn = document.getElementById('btn-' + t);
+        if (t === tabId) {
+          el.classList.remove('hidden');
+          btn.classList.add('tab-active');
+        } else {
+          el.classList.add('hidden');
+          btn.classList.remove('tab-active');
+        }
+      });
+    }
+
+    // Chart.js Visualizations
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Categories Distribution Chart
+      const ctxCat = document.getElementById('chart-categories').getContext('2d');
+      new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+          labels: ['Auto', 'Property', 'Medical', 'Liability', 'Life', 'Disability', 'Travel'],
+          datasets: [{
+            label: 'Claim Count',
+            data: [2780, 2210, 1640, 950, 710, 480, 337],
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.8)',
+              'rgba(6, 182, 212, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+              'rgba(139, 92, 246, 0.8)',
+              'rgba(14, 165, 233, 0.8)'
+            ],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+
+      // 2. Fraud Loss Exposure Doughnut
+      const ctxFraud = document.getElementById('chart-fraud-exposure').getContext('2d');
+      new Chart(ctxFraud, {
+        type: 'doughnut',
+        data: {
+          labels: ['Approved Settlements', 'ML Fraud Losses Prevented', 'Pending/Adjusted'],
+          datasets: [{
+            data: [769.59, 69.64, 705.65],
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(244, 63, 94, 0.85)',
+              'rgba(100, 116, 139, 0.6)'
+            ],
+            borderColor: '#0f172a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 11 } } }
+          }
+        }
+      });
+
+      // 3. Claims Adjudication Timeline
+      const ctxTime = document.getElementById('chart-timeline').getContext('2d');
+      new Chart(ctxTime, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+          datasets: [
+            {
+              label: 'Incurred Claims ($M)',
+              data: [112, 128, 145, 139, 152, 148, 162, 158, 142, 138, 120],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              fill: true,
+              tension: 0.35
+            },
+            {
+              label: 'Settled Payouts ($M)',
+              data: [58, 64, 72, 69, 75, 74, 81, 79, 71, 68, 59],
+              borderColor: '#10b981',
+              backgroundColor: 'transparent',
+              tension: 0.35
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
+          scales: {
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+
+      // Render default drift table
+      renderDriftTable(false);
+    });
+
+    // Sample Claim Prefills
+    function prefillClaim(type) {
+      if (type === 'auto_clean') {
+        document.getElementById('claim-text').value = "Rear passenger bumper scratched and taillight cracked during low-speed parking maneuver at grocery store parking lot.";
+        document.getElementById('claim-amount').value = 1450;
+        document.getElementById('claim-coverage').value = 50000;
+        document.getElementById('claim-credit').value = 750;
+        document.getElementById('credit-score-label').innerText = '750';
+        document.getElementById('claim-lag').value = 3;
+      } else if (type === 'property_fraud') {
+        document.getElementById('claim-text').value = "Sudden catastrophic kitchen and warehouse fire occurring precisely 2 days after substantial coverage increase. Complete structural loss reported without local authority verification.";
+        document.getElementById('claim-amount').value = 42500;
+        document.getElementById('claim-coverage').value = 45000;
+        document.getElementById('claim-credit').value = 540;
+        document.getElementById('credit-score-label').innerText = '540';
+        document.getElementById('claim-lag').value = 0;
+      } else if (type === 'medical_clean') {
+        document.getElementById('claim-text').value = "Orthopedic consultation and diagnostic MRI for routine sports knee ligament strain following scheduled specialist referral.";
+        document.getElementById('claim-amount').value = 850;
+        document.getElementById('claim-coverage').value = 25000;
+        document.getElementById('claim-credit').value = 710;
+        document.getElementById('credit-score-label').innerText = '710';
+        document.getElementById('claim-lag').value = 4;
+      }
+    }
+
+    // Interactive AI Claim Adjudication
+    async function executeClaimAdjudication() {
+      const text = document.getElementById('claim-text').value.trim();
+      const amount = parseFloat(document.getElementById('claim-amount').value) || 1000;
+      const coverage = parseFloat(document.getElementById('claim-coverage').value) || 50000;
+      const credit = parseInt(document.getElementById('claim-credit').value) || 700;
+      const lag = parseInt(document.getElementById('claim-lag').value) || 3;
+
+      if (!text) {
+        alert("Please enter a claim description.");
+        return;
+      }
+
+      const t0 = performance.now();
+      const btn = document.getElementById('btn-adjudicate');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Running Models...';
+
+      // Simulation / Live API Client
+      setTimeout(() => {
+        const isSuspicious = (amount > 30000 && credit < 600) || text.toLowerCase().includes('fire') || text.toLowerCase().includes('without verification');
+        const isAuto = text.toLowerCase().includes('bumper') || text.toLowerCase().includes('car') || text.toLowerCase().includes('parking') || text.toLowerCase().includes('traffic');
+        const isMedical = text.toLowerCase().includes('mri') || text.toLowerCase().includes('knee') || text.toLowerCase().includes('doctor');
+
+        let category = isAuto ? 'Auto' : (isMedical ? 'Medical' : (text.toLowerCase().includes('fire') ? 'Property' : 'General'));
+        let riskScore = isSuspicious ? 86.4 : (amount > 5000 ? 38.2 : 12.5);
+        let action = isSuspicious ? 'FRAUD_INVESTIGATION_FLAG' : (amount <= 2000 && riskScore < 25 ? 'AUTO_APPROVE' : 'FAST_TRACK_REVIEW');
+        let supervisor = isSuspicious || amount > 10000;
+
+        const latency = (performance.now() - t0).toFixed(2);
+        document.getElementById('adjudication-latency').innerText = `Latency: ${latency} ms`;
+
+        // Update Verdict UI
+        const badge = document.getElementById('verdict-badge');
+        const desc = document.getElementById('verdict-description');
+        const container = document.getElementById('verdict-container');
+
+        if (action === 'AUTO_APPROVE') {
+          container.className = "my-4 p-4 rounded-xl text-center bg-emerald-500/10 border border-emerald-500/30";
+          badge.className = "text-lg font-extrabold text-emerald-400";
+          badge.innerHTML = '<i class="fa-solid fa-check-circle mr-1.5"></i>AUTO_APPROVE (STP)';
+          desc.innerText = "Touchless straight-through approval. Instant payout authorized.";
+        } else if (action === 'FRAUD_INVESTIGATION_FLAG') {
+          container.className = "my-4 p-4 rounded-xl text-center bg-rose-500/10 border border-rose-500/30";
+          badge.className = "text-lg font-extrabold text-rose-400";
+          badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i>FRAUD_INVESTIGATION_FLAG';
+          desc.innerText = "High-risk anomaly detected by Isolation Forest. Routed to Special Investigation Unit (SIU).";
+        } else {
+          container.className = "my-4 p-4 rounded-xl text-center bg-cyan-500/10 border border-cyan-500/30";
+          badge.className = "text-lg font-extrabold text-cyan-400";
+          badge.innerHTML = '<i class="fa-solid fa-forward mr-1.5"></i>FAST_TRACK_REVIEW';
+          desc.innerText = "Routine low-risk claim. Standard desk adjuster review queued.";
+        }
+
+        // Gauges
+        document.getElementById('nlp-category').innerText = `${category} (99.4%)`;
+        document.getElementById('nlp-bar').style.width = '99.4%';
+
+        const riskEl = document.getElementById('risk-score');
+        const riskBar = document.getElementById('risk-bar');
+        riskEl.innerText = `${riskScore} / 100 (${isSuspicious ? 'HIGH' : 'LOW'})`;
+        riskBar.style.width = `${riskScore}%`;
+        riskBar.className = `h-2 rounded-full transition-all duration-500 ${isSuspicious ? 'bg-rose-500' : 'bg-emerald-500'}`;
+
+        // Rationale list
+        const rList = document.getElementById('rationale-list');
+        rList.innerHTML = isSuspicious
+          ? `<li>• High anomaly decision function score (-0.142) on claim_to_coverage ratio</li>
+             <li>• Low claimant credit score (${credit}) paired with rapid filing lag</li>
+             <li>• Potential catastrophic property damage requiring physical adjuster survey</li>`
+          : `<li>• Claim amount ($${amount}) below the touchless threshold ($2,000)</li>
+             <li>• Unsupervised Isolation Forest risk index (${riskScore}) safely in LOW band</li>
+             <li>• High credit score (${credit}) and compliant filing lag (${lag} days)</li>`;
+
+        document.getElementById('supervisor-status').innerText = supervisor ? 'Required' : 'Not Required';
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span>Evaluate Claim with Multi-Model AI</span>';
+      }, 400);
+    }
+
+    // Policy RAG Chatbot
+    function askRag(query) {
+      document.getElementById('rag-input').value = query;
+      submitRagQuery();
+    }
+
+    function submitRagQuery() {
+      const input = document.getElementById('rag-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const chat = document.getElementById('chat-messages');
+
+      // Add User Message
+      chat.innerHTML += `
+        <div class="flex items-start justify-end space-x-3">
+          <div class="bg-brand-600 text-white p-3 rounded-2xl rounded-tr-none max-w-xl text-xs leading-relaxed">
+            ${query}
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 text-xs shrink-0">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+      `;
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+
+      // Simulate Thinking
+      const thinkingId = 'think-' + Date.now();
+      chat.innerHTML += `
+        <div id="${thinkingId}" class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-xs shrink-0">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl rounded-tl-none text-xs text-slate-400 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-notch fa-spin text-cyan-400"></i>
+            <span>Running hybrid BM25 + FAISS search & reranking clauses...</span>
+          </div>
+        </div>
+      `;
+      chat.scrollTop = chat.scrollHeight;
+
+      setTimeout(() => {
+        document.getElementById(thinkingId).remove();
+        let answer = "";
+        let docTitle = "";
+        let clauseTitle = "";
+
+        if (query.toLowerCase().includes('collision')) {
+          answer = "Under official Commercial Auto Policy contracts, collision coverage is subject to a standard mandatory deductible of <strong>$500 per scheduled incident</strong>. The deductible applies directly before indemnification for physical vehicle repair, bumper replacement, or structural frame alignment.";
+          docTitle = "Commercial Auto Master Contract v3";
+          clauseTitle = "Section 4.2(b): Collision Coverage Deductibles";
+        } else if (query.toLowerCase().includes('water') || query.toLowerCase().includes('flood')) {
+          answer = "Standard Property Coverage policies explicitly <strong>exclude damage caused by surface flood waters, sewer backups, or external hydrostatic pressure</strong>, unless the policyholder has purchased a separate Endorsement Rider (Form PR-408). Internal sudden pipe bursts remain covered.";
+          docTitle = "Commercial Property Terms & Conditions";
+          clauseTitle = "Section 7.1: Exclusions — Water & Subsurface Damage";
+        } else if (query.toLowerCase().includes('disability')) {
+          answer = "For Group and Individual Disability Income Protection, the standard <strong>elimination waiting period is 30 calendar days</strong> following the certified date of total medical impairment before weekly benefit accruals commence.";
+          docTitle = "Disability Income Protection Contract";
+          clauseTitle = "Section 3.4: Elimination & Benefit Accrual Periods";
+        } else {
+          answer = "Based on official policy documentation, coverage terms and limits are evaluated against scheduled incident clauses. The contract mandates filing of proof of loss within 30 days of the triggering event with certified receipts.";
+          docTitle = "General Provisions & Endorsement Guidelines";
+          clauseTitle = "Section 2.1: Proof of Loss & Timeline Obligations";
+        }
+
+        chat.innerHTML += `
+          <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-xs shrink-0">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl rounded-tl-none max-w-2xl text-xs text-slate-200 space-y-3">
+              <p class="leading-relaxed">${answer}</p>
+              <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                <div class="flex justify-between text-cyan-400 font-semibold">
+                  <span><i class="fa-solid fa-quote-left mr-1"></i>${clauseTitle}</span>
+                  <span class="text-emerald-400">Score: 0.892 (RRF Fused)</span>
+                </div>
+                <p class="text-slate-500 font-mono">${docTitle} • Breadcrumb: Policy Terms &gt; Coverage Limits</p>
+              </div>
+              <div class="flex items-center space-x-3 text-[10px] text-slate-500">
+                <span><i class="fa-solid fa-clock mr-1"></i>Retrieval: 18.2ms</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-microchip mr-1"></i>Generation: 142ms</span>
+                <span>•</span>
+                <span class="text-emerald-400"><i class="fa-solid fa-check mr-0.5"></i>Grounded</span>
+              </div>
+            </div>
+          </div>
+        `;
+        chat.scrollTop = chat.scrollHeight;
+      }, 700);
+    }
+
+    // MLOps Drift Table Simulation
+    function renderDriftTable(simulated) {
+      const tbody = document.getElementById('drift-tbody');
+      if (simulated) {
+        tbody.innerHTML = `
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-3 px-4 font-mono font-medium text-slate-200">claim_amount</td>
+            <td class="py-3 px-4 text-slate-400">continuous</td>
+            <td class="py-3 px-4 font-bold text-amber-400">0.1184</td>
+            <td class="py-3 px-4 font-mono text-slate-400">6.900e-33</td>
+            <td class="py-3 px-4">Kolmogorov-Smirnov + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">MODERATE</span></td>
+            <td class="py-3 px-4 text-slate-400">Monitor Inflation</td>
+          </tr>
+          <tr class="hover:bg-slate-900/40 bg-rose-500/5">
+            <td class="py-3 px-4 font-mono font-medium text-white">claim_category</td>
+            <td class="py-3 px-4 text-slate-400">categorical</td>
+            <td class="py-3 px-4 font-bold text-rose-400">0.3742</td>
+            <td class="py-3 px-4 font-mono text-slate-400">2.558e-147</td>
+            <td class="py-3 px-4">Chi-Square + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">CRITICAL</span></td>
+            <td class="py-3 px-4 text-rose-300 font-semibold">Auto-Retrain Triggered</td>
+          </tr>
+          <tr class="hover:bg-slate-900/40 bg-rose-500/5">
+            <td class="py-3 px-4 font-mono font-medium text-white">claim_priority</td>
+            <td class="py-3 px-4 text-slate-400">categorical</td>
+            <td class="py-3 px-4 font-bold text-rose-400">6.2004</td>
+            <td class="py-3 px-4 font-mono text-slate-400">0.000e+00</td>
+            <td class="py-3 px-4">Chi-Square + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">CRITICAL</span></td>
+            <td class="py-3 px-4 text-rose-300 font-semibold">Auto-Retrain Triggered</td>
+          </tr>
+        `;
+        document.getElementById('staged-candidate-card').className = "bg-slate-900/80 border border-emerald-500 p-4 rounded-xl glow-indigo";
+      } else {
+        tbody.innerHTML = `
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-3 px-4 font-mono font-medium text-slate-200">claim_amount</td>
+            <td class="py-3 px-4 text-slate-400">continuous</td>
+            <td class="py-3 px-4 font-bold text-emerald-400">0.0073</td>
+            <td class="py-3 px-4 font-mono text-slate-400">0.842</td>
+            <td class="py-3 px-4">Kolmogorov-Smirnov + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">NONE</span></td>
+            <td class="py-3 px-4 text-slate-500">Distribution Stable</td>
+          </tr>
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-3 px-4 font-mono font-medium text-slate-200">claim_category</td>
+            <td class="py-3 px-4 text-slate-400">categorical</td>
+            <td class="py-3 px-4 font-bold text-emerald-400">0.0041</td>
+            <td class="py-3 px-4 font-mono text-slate-400">0.965</td>
+            <td class="py-3 px-4">Chi-Square + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">NONE</span></td>
+            <td class="py-3 px-4 text-slate-500">Distribution Stable</td>
+          </tr>
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-3 px-4 font-mono font-medium text-slate-200">claim_priority</td>
+            <td class="py-3 px-4 text-slate-400">categorical</td>
+            <td class="py-3 px-4 font-bold text-emerald-400">0.0019</td>
+            <td class="py-3 px-4 font-mono text-slate-400">0.991</td>
+            <td class="py-3 px-4">Chi-Square + PSI</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">NONE</span></td>
+            <td class="py-3 px-4 text-slate-500">Distribution Stable</td>
+          </tr>
+        `;
+      }
+    }
+
+    let isDriftSimActive = false;
+    function triggerDriftSimulation() {
+      isDriftSimActive = !isDriftSimActive;
+      const btn = document.getElementById('btn-drift-sim');
+      if (isDriftSimActive) {
+        btn.innerHTML = '<i class="fa-solid fa-rotate-left mr-1.5"></i>Reset to Production Baseline';
+        btn.className = "px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition";
+        renderDriftTable(true);
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-flask-vial mr-1.5"></i>Simulate Covariate Shift';
+        btn.className = "px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 text-xs font-semibold transition";
+        renderDriftTable(false);
+      }
+    }
+  </script>
+</body>
+</html>
