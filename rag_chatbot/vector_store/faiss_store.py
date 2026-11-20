@@ -93,7 +93,7 @@ class FAISSVectorStore:
 
         logger.info("Indexing %d chunks into %s...", len(chunks), self._engine_type)
 
-        texts = [c.text for c in chunks]
+        texts = [c.get("text", "") if isinstance(c, dict) else c.text for c in chunks]
         embeddings_list = []
         for i in range(0, len(texts), batch_size):
             batch_texts = texts[i : i + batch_size]
@@ -112,19 +112,34 @@ class FAISSVectorStore:
 
         # Store metadata
         for c in chunks:
-            self.metadata_store.append(
-                {
-                    "chunk_id": c.chunk_id,
-                    "document_id": c.document_id,
-                    "policy_type": c.policy_type,
-                    "breadcrumb": c.breadcrumb,
-                    "section_title": c.section_title,
-                    "clause_title": c.clause_title,
-                    "text": c.text,
-                    "char_length": c.char_length,
-                    "metadata": c.metadata,
-                }
-            )
+            if isinstance(c, dict):
+                self.metadata_store.append(
+                    {
+                        "chunk_id": c.get("chunk_id", ""),
+                        "document_id": c.get("document_id", ""),
+                        "policy_type": c.get("policy_type", ""),
+                        "breadcrumb": c.get("breadcrumb", ""),
+                        "section_title": c.get("section_title", ""),
+                        "clause_title": c.get("clause_title", ""),
+                        "text": c.get("text", ""),
+                        "char_length": len(c.get("text", "")),
+                        "metadata": c.get("metadata", {}),
+                    }
+                )
+            else:
+                self.metadata_store.append(
+                    {
+                        "chunk_id": c.chunk_id,
+                        "document_id": c.document_id,
+                        "policy_type": c.policy_type,
+                        "breadcrumb": c.breadcrumb,
+                        "section_title": c.section_title,
+                        "clause_title": c.clause_title,
+                        "text": c.text,
+                        "char_length": c.char_length,
+                        "metadata": c.metadata,
+                    }
+                )
 
         logger.info("Successfully indexed %d chunks (total vectors: %d)",
                     len(chunks), self.total_vectors)
@@ -164,8 +179,19 @@ class FAISSVectorStore:
             meta = self.metadata_store[idx]
 
             # Apply metadata filter
-            if policy_type_filter and meta["policy_type"].lower() != policy_type_filter.lower():
-                continue
+            if policy_type_filter:
+                filter_val = policy_type_filter.lower()
+                meta_val = meta["policy_type"].lower()
+                # Also check common synonyms
+                synonyms = {
+                    "homeowners": "property",
+                    "health": "medical",
+                    "commercial": "liability",
+                }
+                norm_filter = synonyms.get(filter_val, filter_val)
+                norm_meta = synonyms.get(meta_val, meta_val)
+                if norm_meta != norm_filter:
+                    continue
 
             results.append(
                 SearchResult(
