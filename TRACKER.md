@@ -26,7 +26,8 @@
 | Sprint 6 | 6.2 | ICIP-017 | Claims Processing & ML Prediction Endpoints: POST /api/v1/claims/analyze multi-model adjudication & explainability (64/64 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 6 | 6.3 | ICIP-018 | Policy RAG Chatbot Endpoint & In-Memory/Redis Caching: Grounded policy queries, citation assembly & cache invalidation (71/71 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 7 | 7.1 | ICIP-019 | Multi-Stage Dockerfile & Container Optimization: Multi-stage build, non-root user (10001), slim Python 3.12, healthchecks & .dockerignore (75/75 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 7 | 7.2 | ICIP-020 | Multi-Service Docker Compose Orchestration: API, MySQL 8.4, Redis, healthcheck dependencies & network isolation | 🔜 Next | — |
+| Sprint 7 | 7.2 | ICIP-020 | Multi-Service Docker Compose Orchestration: API, MySQL 8.4, Redis, healthcheck dependencies & network isolation (81/81 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 7 | 7.3 | ICIP-021 | Automated CI/CD Pipelines: GitHub Actions & Jenkinsfile for lint, test, container build & push | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:

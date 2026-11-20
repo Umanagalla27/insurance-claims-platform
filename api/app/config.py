@@ -55,5 +55,12 @@ class Settings:
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "SecureClaims2026!")
     DB_NAME: str = os.getenv("DB_NAME", "insurance_dw")
 
+    # Redis Cache Settings
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    REDIS_PASSWORD: Optional[str] = os.getenv("REDIS_PASSWORD", None)
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+    REDIS_ENABLED: bool = os.getenv("REDIS_ENABLED", "false").lower() in ("true", "1", "yes")
+
 
 settings = Settings()

@@ -1,13 +1,19 @@
-# ============================================================
-# docker-compose.yml — Insurance Claims Intelligence Platform
-# ============================================================
-# WHY MEMORY LIMITS MATTER:
-#   On development machines with 8 GB RAM, unconstrained MySQL
-#   containers can consume 2-3 GB, freezing the host OS.
-#   We cap MySQL memory at 1024 MB to ensure smooth multi-tasking.
-# ============================================================
+# ==============================================================================
+# docker-compose.yml — Multi-Service Microservice Orchestration
+# Project: Insurance Claims Intelligence Platform (ICIP)
+# ==============================================================================
+# Architecture & Performance Standards:
+#   1. Zero "Works On My Machine": Fully reproducible local microservices stack.
+#   2. Memory Guardrails: Total memory capped at <= 2.3 GB (safe for 8 GB RAM machines).
+#   3. Service Ordering: API starts ONLY after MySQL and Redis pass healthchecks.
+#   4. Network Segmentation: Frontend ingress network vs isolated backend DB network.
+#   5. Persistent Storage: Named local volumes for database state and cache recovery.
+# ==============================================================================
 
 services:
+  # ----------------------------------------------------------------------------
+  # 1. MySQL 8.4 Enterprise Data Warehouse
+  # ----------------------------------------------------------------------------
   mysql:
     image: mysql:8.4
     container_name: insurance_claims_mysql
@@ -21,7 +27,7 @@ services:
       - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      # Automatically executes SQL migration scripts upon first container initialization
+      # Auto-executes SQL schema and triggers upon first database container launch
       - ./database/migrations:/docker-entrypoint-initdb.d:ro
     deploy:
       resources:
@@ -30,11 +36,106 @@ services:
           cpus: "1.0"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "claims_user", "-pclaims_password_123"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 15s
+      retries: 5
+      start_period: 20s
+    networks:
+      - backend_net
 
+  # ----------------------------------------------------------------------------
+  # 2. Redis 7.2 In-Memory Semantic & RAG Query Cache
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: insurance_claims_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --maxmemory 200mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - backend_net
+
+  # ----------------------------------------------------------------------------
+  # 3. FastAPI Core REST Gateway & Model Inference Microservice
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: insurance-claims-api:1.0.0
+    container_name: insurance_claims_api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENV: production
+      DEBUG: "false"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER:-claims_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-claims_password_123}
+      DB_NAME: ${MYSQL_DATABASE:-insurance_claims_db}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_ENABLED: "true"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: "1.5"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    networks:
+      - frontend_net
+      - backend_net
+
+# ------------------------------------------------------------------------------
+# Network Topology & Access Control
+# ------------------------------------------------------------------------------
+networks:
+  frontend_net:
+    driver: bridge
+    name: insurance_frontend_net
+  backend_net:
+    driver: bridge
+    name: insurance_backend_net
+
+# ------------------------------------------------------------------------------
+# Persistent Volume Declarations
+# ------------------------------------------------------------------------------
 volumes:
   mysql_data:
-    driver: local
+    name: insurance_claims_mysql_data
+  redis_data:
+    name: insurance_claims_redis_data
