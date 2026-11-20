@@ -143,3 +143,6 @@ class ClaimAnomalyDetector:
             risk_factors=factors,
             feature_values={k: round(v, 4) for k, v in features_dict.items()},
         )
+
+    # Convenience alias
+    predict_claim = evaluate_claim

@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.app.config import settings
 from api.app.middleware.errors import setup_exception_handlers
 from api.app.middleware.timing import TimingMiddleware
+from api.app.routers.claims import router as claims_router
 from api.app.routers.health import router as health_router
 from api.app.services.container import lifespan
 
@@ -54,6 +55,8 @@ def create_app() -> FastAPI:
     # 4. Mount Routers
     # Standard health router mounted under /api/v1
     app.include_router(health_router, prefix=settings.API_V1_PREFIX)
+    # Claims analysis and ML adjudication router
+    app.include_router(claims_router, prefix=settings.API_V1_PREFIX)
     # Convenience liveness alias at root /health for Kubernetes / AWS Target Groups
     app.include_router(health_router, prefix="")
 
