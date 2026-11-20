@@ -119,8 +119,13 @@ def benchmark_inference_latency(
     p95 = float(np.percentile(latencies_ms, 95))
     mean_lat = float(np.mean(latencies_ms))
 
-    logger.info("Inference Latency Benchmark (%d iterations): p50=%.3f ms, p95=%.3f ms, mean=%.3f ms",
-                iterations, p50, p95, mean_lat)
+    logger.info(
+        "Inference Latency Benchmark (%d iterations): p50=%.3f ms, p95=%.3f ms, mean=%.3f ms",
+        iterations,
+        p50,
+        p95,
+        mean_lat,
+    )
     return {
         "p50_ms": round(p50, 4),
         "p95_ms": round(p95, 4),
@@ -148,8 +153,12 @@ def train_model(
         random_state=random_state,
         stratify=y,
     )
-    logger.info("Dataset split: Train=%d, Test=%d (Stratified across %d classes)",
-                len(X_train), len(X_test), y.nunique())
+    logger.info(
+        "Dataset split: Train=%d, Test=%d (Stratified across %d classes)",
+        len(X_train),
+        len(X_test),
+        y.nunique(),
+    )
 
     # Build and fit pipeline
     pipeline = build_pipeline()
@@ -172,7 +181,9 @@ def train_model(
 
     classes = sorted(pipeline.classes_)
     conf_mat = confusion_matrix(y_test, y_pred, labels=classes).tolist()
-    clf_report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+    clf_report = classification_report(
+        y_test, y_pred, output_dict=True, zero_division=0
+    )
 
     # Latency benchmark
     sample_pool = X_test.tolist()[:50]
@@ -219,8 +230,11 @@ def train_model(
     metrics_path = artifact_dir / METRICS_FILENAME
 
     joblib.dump(artifact_payload, model_path, compress=3)
-    logger.info("Saved serialized model artifact to %s (size: %.2f KB)",
-                model_path, model_path.stat().st_size / 1024.0)
+    logger.info(
+        "Saved serialized model artifact to %s (size: %.2f KB)",
+        model_path,
+        model_path.stat().st_size / 1024.0,
+    )
 
     with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
@@ -238,5 +252,7 @@ if __name__ == "__main__":
     print(f"Vocabulary: {eval_metrics['vocabulary_size']} features")
     print(f"Accuracy:   {eval_metrics['test_metrics']['accuracy'] * 100:.2f}%")
     print(f"Macro F1:   {eval_metrics['test_metrics']['macro_f1'] * 100:.2f}%")
-    print(f"Latency:    p50={eval_metrics['latency_benchmark']['p50_ms']}ms, p95={eval_metrics['latency_benchmark']['p95_ms']}ms")
+    print(
+        f"Latency:    p50={eval_metrics['latency_benchmark']['p50_ms']}ms, p95={eval_metrics['latency_benchmark']['p95_ms']}ms"
+    )
     print("=" * 60)

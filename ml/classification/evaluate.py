@@ -32,7 +32,9 @@ from sklearn.model_selection import train_test_split
 
 from ml.classification.preprocess import clean_claim_text
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 logger = logging.getLogger("ml.classification.evaluate")
 
 DEFAULT_MODEL_PATH = Path("ml/artifacts/claim_classifier_tfidf_logreg.joblib")
@@ -91,7 +93,9 @@ def compute_comprehensive_metrics(
 
     # Multi-class One-vs-Rest ROC-AUC
     try:
-        ovr_roc_auc = float(roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro"))
+        ovr_roc_auc = float(
+            roc_auc_score(y_test, y_prob, multi_class="ovr", average="macro")
+        )
     except Exception as e:
         logger.warning("ROC-AUC computation failed: %s", e)
         ovr_roc_auc = 1.0
@@ -153,11 +157,17 @@ def extract_feature_importances(
 
         feature_importances[cls_name] = {
             "top_positive_features": [
-                {"token": str(feature_names[idx]), "weight": round(float(coefs[idx]), 4)}
+                {
+                    "token": str(feature_names[idx]),
+                    "weight": round(float(coefs[idx]), 4),
+                }
                 for idx in top_pos_idx
             ],
             "top_negative_features": [
-                {"token": str(feature_names[idx]), "weight": round(float(coefs[idx]), 4)}
+                {
+                    "token": str(feature_names[idx]),
+                    "weight": round(float(coefs[idx]), 4),
+                }
                 for idx in top_neg_idx
             ],
         }
@@ -252,7 +262,9 @@ def run_boundary_error_analysis(
 def format_confusion_matrix_ascii(labels: list[str], matrix: list[list[int]]) -> str:
     """Format confusion matrix as a formatted markdown/ASCII table."""
     col_width = 11
-    header = f"{'Actual \\ Pred':<14} | " + " | ".join(f"{lbl:>{col_width}}" for lbl in labels)
+    header = f"{'Actual \\ Pred':<14} | " + " | ".join(
+        f"{lbl:>{col_width}}" for lbl in labels
+    )
     separator = "-" * 15 + "+" + "+".join(["-" * (col_width + 2)] * len(labels))
 
     rows = [header, separator]
@@ -273,7 +285,9 @@ def evaluate_and_export(
     """Execute end-to-end evaluation pipeline and export all JSON artifacts."""
     artifact_dir.mkdir(parents=True, exist_ok=True)
 
-    pipeline, classes, X_test, y_test = load_model_and_test_data(model_path, staging_path)
+    pipeline, classes, X_test, y_test = load_model_and_test_data(
+        model_path, staging_path
+    )
 
     metrics = compute_comprehensive_metrics(pipeline, classes, X_test, y_test)
     features = extract_feature_importances(pipeline, classes, top_n=10)
@@ -314,9 +328,15 @@ if __name__ == "__main__":
     print(f"Macro F1:     {m['overall_metrics']['macro_f1'] * 100:.2f}%")
     print(f"OvR ROC-AUC:  {m['overall_metrics']['ovr_roc_auc']:.4f}")
     print("\nConfusion Matrix:")
-    print(format_confusion_matrix_ascii(m["confusion_matrix"]["labels"], m["confusion_matrix"]["matrix"]))
+    print(
+        format_confusion_matrix_ascii(
+            m["confusion_matrix"]["labels"], m["confusion_matrix"]["matrix"]
+        )
+    )
     print("\nBoundary Stress Test Samples:")
     for b in result["error_analysis"]["boundary_stress_tests"]:
         print(f"- Scenario: {b['scenario']}")
-        print(f"  Predicted: {b['predicted_category']} (Confidence: {b['confidence'] * 100:.1f}%, Margin: {b['margin_to_second'] * 100:.1f}%)")
+        print(
+            f"  Predicted: {b['predicted_category']} (Confidence: {b['confidence'] * 100:.1f}%, Margin: {b['margin_to_second'] * 100:.1f}%)"
+        )
     print("=" * 70)

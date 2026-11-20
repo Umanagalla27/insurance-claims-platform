@@ -98,7 +98,15 @@ class TestInferenceEngine:
 
     def test_model_artifact_loaded(self, shared_classifier: ClaimClassifier) -> None:
         assert len(shared_classifier.classes) == 7
-        expected_classes = {"Auto", "Disability", "Liability", "Life", "Medical", "Property", "Travel"}
+        expected_classes = {
+            "Auto",
+            "Disability",
+            "Liability",
+            "Life",
+            "Medical",
+            "Property",
+            "Travel",
+        }
         assert set(shared_classifier.classes) == expected_classes
 
     def test_predict_auto_claim(self, shared_classifier: ClaimClassifier) -> None:
@@ -129,16 +137,22 @@ class TestInferenceEngine:
         assert result.predicted_category == "Travel"
         assert result.confidence > 0.50
 
-    def test_fallback_on_empty_and_placeholder(self, shared_classifier: ClaimClassifier) -> None:
+    def test_fallback_on_empty_and_placeholder(
+        self, shared_classifier: ClaimClassifier
+    ) -> None:
         empty_res = shared_classifier.predict("")
         assert empty_res.is_fallback is True
         assert empty_res.confidence == 0.0
 
-        placeholder_res = shared_classifier.predict("[NO DESCRIPTION PROVIDED - PENDING REVIEW]")
+        placeholder_res = shared_classifier.predict(
+            "[NO DESCRIPTION PROVIDED - PENDING REVIEW]"
+        )
         assert placeholder_res.is_fallback is True
         assert placeholder_res.confidence == 0.0
 
-    def test_predict_batch_consistency(self, shared_classifier: ClaimClassifier) -> None:
+    def test_predict_batch_consistency(
+        self, shared_classifier: ClaimClassifier
+    ) -> None:
         batch = [
             "Multi-car collision rear-ended at highway traffic signal",
             "Property sustained extensive water damage from burst plumbing pipe flooding",

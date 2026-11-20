@@ -2,22 +2,27 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Generic, List, Optional, TypeVar
+from datetime import UTC, datetime
+from typing import TypeVar
+
 from pydantic import BaseModel, Field
 
 T = TypeVar("T")
 
 
-class ApiResponse(BaseModel, Generic[T]):
+class ApiResponse[T](BaseModel):
     """Standardized API response envelope for all successful endpoints."""
 
-    success: bool = Field(default=True, description="Indicates whether the request was successful")
-    data: Optional[T] = Field(default=None, description="Response payload")
+    success: bool = Field(
+        default=True, description="Indicates whether the request was successful"
+    )
+    data: T | None = Field(default=None, description="Response payload")
     message: str = Field(default="Success", description="Human-readable status message")
-    request_id: Optional[str] = Field(default=None, description="Unique trace identifier for debugging")
+    request_id: str | None = Field(
+        default=None, description="Unique trace identifier for debugging"
+    )
     timestamp: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="ISO 8601 UTC timestamp of response generation",
     )
 
@@ -25,9 +30,11 @@ class ApiResponse(BaseModel, Generic[T]):
 class ErrorDetail(BaseModel):
     """Granular error detail item (field validation, business logic rule)."""
 
-    field: Optional[str] = Field(default=None, description="Form or JSON field name that caused the error")
+    field: str | None = Field(
+        default=None, description="Form or JSON field name that caused the error"
+    )
     message: str = Field(..., description="Specific error explanation")
-    code: Optional[str] = Field(default=None, description="Machine-readable error code")
+    code: str | None = Field(default=None, description="Machine-readable error code")
 
 
 class ErrorResponse(BaseModel):
@@ -36,9 +43,13 @@ class ErrorResponse(BaseModel):
     success: bool = Field(default=False, description="Always false for error responses")
     error_code: str = Field(..., description="Machine-readable error identifier")
     message: str = Field(..., description="High-level description of what went wrong")
-    details: List[ErrorDetail] = Field(default_factory=list, description="Sub-errors or validation issues")
-    request_id: Optional[str] = Field(default=None, description="Unique trace identifier for troubleshooting")
+    details: list[ErrorDetail] = Field(
+        default_factory=list, description="Sub-errors or validation issues"
+    )
+    request_id: str | None = Field(
+        default=None, description="Unique trace identifier for troubleshooting"
+    )
     timestamp: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="ISO 8601 UTC timestamp of error occurrence",
     )

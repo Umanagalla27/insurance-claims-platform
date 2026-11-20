@@ -70,14 +70,20 @@ class SemanticDenseEmbedder(BaseEmbedder):
 
         for tok in tokens:
             # Word token feature
-            idx = int(hashlib.md5(tok.encode("utf-8")).hexdigest(), 16) % self._num_features
+            idx = (
+                int(hashlib.md5(tok.encode("utf-8")).hexdigest(), 16)
+                % self._num_features
+            )
             vec[idx] += 1.0
 
             # Sub-word char 3-grams for typo and morphological robustness
             if len(tok) >= 4:
                 for j in range(len(tok) - 2):
                     tri = tok[j : j + 3]
-                    tri_idx = int(hashlib.md5(tri.encode("utf-8")).hexdigest(), 16) % self._num_features
+                    tri_idx = (
+                        int(hashlib.md5(tri.encode("utf-8")).hexdigest(), 16)
+                        % self._num_features
+                    )
                     vec[tri_idx] += 0.35
 
         # Sublinear scaling: 1 + log(tf)
@@ -97,7 +103,9 @@ class SemanticDenseEmbedder(BaseEmbedder):
             return np.empty((0, self._dim), dtype=np.float32)
 
         sparse_matrix = np.vstack([self._tokenize_to_sparse_bow(t) for t in texts])
-        dense_embeddings = np.dot(sparse_matrix, self._projection_matrix).astype(np.float32)
+        dense_embeddings = np.dot(sparse_matrix, self._projection_matrix).astype(
+            np.float32
+        )
 
         # Row-wise L2 normalization
         norms = np.linalg.norm(dense_embeddings, axis=1, keepdims=True)
@@ -131,6 +139,7 @@ class GeminiDenseEmbedder(BaseEmbedder):
             raise ValueError("GEMINI_API_KEY environment variable not set")
         try:
             import google.generativeai as genai
+
             genai.configure(api_key=self.api_key)
             results = []
             for t in texts:
@@ -152,6 +161,7 @@ class GeminiDenseEmbedder(BaseEmbedder):
             raise ValueError("GEMINI_API_KEY environment variable not set")
         try:
             import google.generativeai as genai
+
             genai.configure(api_key=self.api_key)
             emb = genai.embed_content(
                 model="models/text-embedding-004",

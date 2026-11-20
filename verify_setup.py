@@ -9,7 +9,6 @@ If any check FAILS, read the error message and fix it before proceeding.
 """
 
 import sys
-import os
 from pathlib import Path
 
 
@@ -27,7 +26,6 @@ def main() -> None:
     print("  Insurance Claims Platform — Setup Verification")
     print("=" * 60 + "\n")
 
-    all_passed = True
     results = []
 
     # ---- Python Version ----
@@ -42,17 +40,15 @@ def main() -> None:
 
     r = check(
         "Running inside venv (not system/base Python)",
-        hasattr(sys, "real_prefix") or (
-            hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
-        ),
+        hasattr(sys, "real_prefix")
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix),
         "Activate venv: .\\venv\\Scripts\\Activate.ps1",
     )
     results.append(r)
 
     r = check(
         "No Anaconda paths in sys.path",
-        not any("anaconda3\\Lib" in p and "envs" not in p
-                for p in sys.path if p),
+        not any("anaconda3\\Lib" in p and "envs" not in p for p in sys.path if p),
         "Use C:\\Python312\\python.exe -m venv venv (not Anaconda Python)",
     )
     results.append(r)
@@ -143,7 +139,7 @@ def main() -> None:
 
     # ---- .env Check ----
     print("\nSecurity Checks:")
-    env_file = base / ".env"
+    base / ".env"
     env_example = base / ".env.example"
 
     r = check(

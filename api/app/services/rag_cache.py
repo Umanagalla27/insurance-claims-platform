@@ -3,12 +3,11 @@ In-Memory LRU & TTL Caching Service for RAG Query Acceleration.
 Reduces LLM API calls, prevents redundant vector searches, and ensures <2ms responses for frequent questions.
 """
 
-from collections import OrderedDict
-from datetime import datetime, timezone
 import re
 import threading
 import time
-from typing import Any, Dict, Optional, Tuple
+from collections import OrderedDict
+from datetime import UTC, datetime
 
 from api.app.schemas.rag import CacheStatsResponse, PolicyAnswerResponse
 
@@ -19,21 +18,27 @@ class RAGQueryCache:
     def __init__(self, max_size: int = 500, ttl_seconds: int = 3600):
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
-        self._cache: OrderedDict[str, Tuple[PolicyAnswerResponse, float]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[PolicyAnswerResponse, float]] = (
+            OrderedDict()
+        )
         self._lock = threading.Lock()
         self._hits = 0
         self._misses = 0
         self._evictions = 0
 
     @staticmethod
-    def normalize_key(query: str, policy_type: Optional[str] = None, top_k: int = 3) -> str:
+    def normalize_key(
+        query: str, policy_type: str | None = None, top_k: int = 3
+    ) -> str:
         """Create a canonical normalized cache key from query text and parameters."""
         cleaned_query = re.sub(r"[^\w\s]", "", query.lower())
         tokens = " ".join(cleaned_query.split())
         normalized_ptype = (policy_type or "ALL").upper().strip()
         return f"{normalized_ptype}:{top_k}:{tokens}"
 
-    def get(self, query: str, policy_type: Optional[str] = None, top_k: int = 3) -> Optional[PolicyAnswerResponse]:
+    def get(
+        self, query: str, policy_type: str | None = None, top_k: int = 3
+    ) -> PolicyAnswerResponse | None:
         """Retrieve a cached answer if present and unexpired."""
         key = self.normalize_key(query, policy_type, top_k)
         now = time.time()
@@ -63,7 +68,7 @@ class RAGQueryCache:
                     "retrieval_latency_ms": 0.05,
                     "generation_latency_ms": 0.05,
                     "total_latency_ms": 0.15,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                 }
             )
             return cached_copy
@@ -71,7 +76,7 @@ class RAGQueryCache:
     def set(
         self,
         query: str,
-        policy_type: Optional[str],
+        policy_type: str | None,
         top_k: int,
         response: PolicyAnswerResponse,
     ) -> None:
@@ -100,7 +105,9 @@ class RAGQueryCache:
         """Return cache telemetry and hit ratio."""
         with self._lock:
             total_requests = self._hits + self._misses
-            ratio = round((self._hits / total_requests), 4) if total_requests > 0 else 0.0
+            ratio = (
+                round((self._hits / total_requests), 4) if total_requests > 0 else 0.0
+            )
             return CacheStatsResponse(
                 total_entries=len(self._cache),
                 hits=self._hits,

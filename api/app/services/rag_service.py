@@ -9,8 +9,7 @@ from __future__ import annotations
 import logging
 import os
 import re
-import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import httpx
 
@@ -40,7 +39,9 @@ class PolicyRAGService:
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/")
         self.ollama_model = os.getenv("OLLAMA_MODEL", "gemma2:2b")
 
-    def format_citations(self, chunks: List[Dict[str, Any]]) -> List[PolicyChunkCitation]:
+    def format_citations(
+        self, chunks: list[dict[str, Any]]
+    ) -> list[PolicyChunkCitation]:
         """Convert reranked raw chunk dictionaries into structured Pydantic citations."""
         citations = []
         for c in chunks:
@@ -59,13 +60,15 @@ class PolicyRAGService:
                     section_title=meta.get("section_title", "General Provisions"),
                     clause_title=meta.get("clause_title", "Terms and Conditions"),
                     breadcrumb=meta.get("breadcrumb", ""),
-                    relevance_score=round(c.get("rerank_score", c.get("fused_score", 0.0)), 4),
+                    relevance_score=round(
+                        c.get("rerank_score", c.get("fused_score", 0.0)), 4
+                    ),
                     snippet=snippet,
                 )
             )
         return citations
 
-    def _call_gemini(self, prompt: str) -> Optional[str]:
+    def _call_gemini(self, prompt: str) -> str | None:
         """Call Google Gemini REST API."""
         if not self.gemini_api_key:
             return None
@@ -73,11 +76,7 @@ class PolicyRAGService:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
         payload = {
             "contents": [
-                {
-                    "parts": [
-                        {"text": f"{SYSTEM_GROUNDING_PROMPT}\n\n{prompt}"}
-                    ]
-                }
+                {"parts": [{"text": f"{SYSTEM_GROUNDING_PROMPT}\n\n{prompt}"}]}
             ],
             "generationConfig": {
                 "temperature": 0.1,
@@ -95,13 +94,15 @@ class PolicyRAGService:
                         parts = candidates[0]["content"].get("parts", [])
                         if parts and "text" in parts[0]:
                             return parts[0]["text"].strip()
-                logger.warning("Gemini API non-200 status: %s - %s", resp.status_code, resp.text)
+                logger.warning(
+                    "Gemini API non-200 status: %s - %s", resp.status_code, resp.text
+                )
         except Exception as e:
             logger.warning("Gemini API call failed: %s", e)
 
         return None
 
-    def _call_ollama(self, prompt: str) -> Optional[str]:
+    def _call_ollama(self, prompt: str) -> str | None:
         """Call local Ollama endpoint."""
         url = f"{self.ollama_url}/api/generate"
         payload = {
@@ -122,7 +123,7 @@ class PolicyRAGService:
 
         return None
 
-    def _extractive_synthesis(self, query: str, chunks: List[Dict[str, Any]]) -> str:
+    def _extractive_synthesis(self, query: str, chunks: list[dict[str, Any]]) -> str:
         """Deterministic, grounded extractive synthesis for zero-latency offline environments."""
         if not chunks:
             return (
@@ -131,7 +132,7 @@ class PolicyRAGService:
             )
 
         bullet_points = []
-        for i, c in enumerate(chunks[:3], 1):
+        for _i, c in enumerate(chunks[:3], 1):
             meta = c.get("metadata", {})
             sec = meta.get("section_title", "Coverage Terms")
             clause = meta.get("clause_title", "Conditions")
@@ -139,7 +140,9 @@ class PolicyRAGService:
             text = c.get("text", "").strip()
 
             # Take the first 2-3 sentences of the clause
-            sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+            sentences = [
+                s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()
+            ]
             summary_sentences = " ".join(sentences[:2]) if sentences else text[:200]
 
             bullet_points.append(
@@ -158,8 +161,8 @@ class PolicyRAGService:
     def generate_answer(
         self,
         query: str,
-        retrieval_result: Dict[str, Any],
-    ) -> Tuple[str, str, float]:
+        retrieval_result: dict[str, Any],
+    ) -> tuple[str, str, float]:
         """Generate grounded answer using hybrid LLM / fallback cascade.
 
         Returns:
@@ -170,7 +173,9 @@ class PolicyRAGService:
 
         # Compute confidence from top chunk score
         if chunks:
-            top_score = chunks[0].get("rerank_score", chunks[0].get("fused_score", 0.75))
+            top_score = chunks[0].get(
+                "rerank_score", chunks[0].get("fused_score", 0.75)
+            )
             confidence = min(0.99, max(0.55, float(top_score)))
         else:
             confidence = 0.30
@@ -182,7 +187,11 @@ class PolicyRAGService:
         )
 
         # Check if external LLM generation is enabled (requires network / running daemon)
-        enable_external_llm = os.getenv("ENABLE_EXTERNAL_LLM", "false").lower() in ("true", "1", "yes")
+        enable_external_llm = os.getenv("ENABLE_EXTERNAL_LLM", "false").lower() in (
+            "true",
+            "1",
+            "yes",
+        )
 
         if enable_external_llm:
             # 1. Try Google Gemini API
@@ -193,8 +202,16 @@ class PolicyRAGService:
             # 2. Try Local Ollama
             ollama_answer = self._call_ollama(prompt)
             if ollama_answer:
-                return ollama_answer, f"ollama/{self.ollama_model}", round(confidence, 4)
+                return (
+                    ollama_answer,
+                    f"ollama/{self.ollama_model}",
+                    round(confidence, 4),
+                )
 
         # 3. Deterministic Grounded Extractive Synthesizer (Instant, offline & 100% reliable)
         extractive_answer = self._extractive_synthesis(query, chunks)
-        return extractive_answer, "grounded-extractive-synthesizer", round(confidence, 4)
+        return (
+            extractive_answer,
+            "grounded-extractive-synthesizer",
+            round(confidence, 4),
+        )

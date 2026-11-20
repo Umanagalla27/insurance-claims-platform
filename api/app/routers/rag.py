@@ -3,8 +3,9 @@ Policy RAG Chatbot and Query API Router.
 Handles contextual policy search, citations, multi-tier LLM answer synthesis, and query caching.
 """
 
-from datetime import datetime, timezone
 import time
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, status
 
 from api.app.schemas.common import ApiResponse
@@ -74,7 +75,7 @@ def query_policy(
     citations = rag_service.format_citations(retrieval_result.get("chunks", []))
 
     total_latency_ms = (time.perf_counter() - start_time) * 1000.0
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
 
     response = PolicyAnswerResponse(
         query=request.query,

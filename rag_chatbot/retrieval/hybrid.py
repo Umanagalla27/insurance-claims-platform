@@ -11,7 +11,7 @@ Supports:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rag_chatbot.retrieval.bm25 import BM25SearchEngine
 from rag_chatbot.vector_store.embeddings import BaseEmbedder
@@ -20,16 +20,22 @@ from rag_chatbot.vector_store.faiss_store import FAISSVectorStore
 logger = logging.getLogger(__name__)
 
 
-def _normalize_hit(hit: Any) -> Dict[str, Any]:
+def _normalize_hit(hit: Any) -> dict[str, Any]:
     """Normalize SearchResult dataclass or dict into uniform dictionary."""
     if isinstance(hit, dict):
         meta = hit.get("metadata", {})
-        cid = hit.get("chunk_id") or meta.get("chunk_id") or str(hash(hit.get("text", "")))
+        cid = (
+            hit.get("chunk_id")
+            or meta.get("chunk_id")
+            or str(hash(hit.get("text", "")))
+        )
         return {
             "chunk_id": cid,
             "score": float(hit.get("score", 0.0)),
             "text": hit.get("text", ""),
-            "metadata": meta if meta else {
+            "metadata": meta
+            if meta
+            else {
                 "chunk_id": cid,
                 "policy_type": hit.get("policy_type", ""),
                 "section_title": hit.get("section_title", ""),
@@ -63,7 +69,7 @@ class HybridRetriever:
         self,
         vector_store: FAISSVectorStore,
         bm25_engine: BM25SearchEngine,
-        embedder: Optional[BaseEmbedder] = None,
+        embedder: BaseEmbedder | None = None,
     ):
         self.vector_store = vector_store
         self.bm25_engine = bm25_engine
@@ -73,12 +79,12 @@ class HybridRetriever:
         self,
         query: str,
         top_k: int = 5,
-        policy_type_filter: Optional[str] = None,
+        policy_type_filter: str | None = None,
         mode: str = "rrf",
         alpha: float = 0.5,
         rrf_k: int = 60,
         candidate_multiplier: int = 3,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Execute hybrid search combining dense and sparse results."""
         candidate_k = max(top_k * candidate_multiplier, 10)
 
@@ -99,31 +105,35 @@ class HybridRetriever:
         dense_hits = [_normalize_hit(h) for h in raw_dense_hits]
 
         if mode == "convex":
-            return self._convex_fusion(dense_hits, sparse_hits, alpha=alpha, top_k=top_k)
+            return self._convex_fusion(
+                dense_hits, sparse_hits, alpha=alpha, top_k=top_k
+            )
         else:
             return self._rrf_fusion(dense_hits, sparse_hits, rrf_k=rrf_k, top_k=top_k)
 
     def _rrf_fusion(
         self,
-        dense_hits: List[Dict[str, Any]],
-        sparse_hits: List[Dict[str, Any]],
+        dense_hits: list[dict[str, Any]],
+        sparse_hits: list[dict[str, Any]],
         rrf_k: int,
         top_k: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Reciprocal Rank Fusion: RRF(d) = sum( 1 / (k + rank) )."""
-        fused_scores: Dict[str, float] = {}
-        items_by_id: Dict[str, Dict[str, Any]] = {}
-        dense_ranks: Dict[str, int] = {}
-        sparse_ranks: Dict[str, int] = {}
-        dense_scores: Dict[str, float] = {}
-        sparse_scores: Dict[str, float] = {}
+        fused_scores: dict[str, float] = {}
+        items_by_id: dict[str, dict[str, Any]] = {}
+        dense_ranks: dict[str, int] = {}
+        sparse_ranks: dict[str, int] = {}
+        dense_scores: dict[str, float] = {}
+        sparse_scores: dict[str, float] = {}
 
         for rank, hit in enumerate(dense_hits, start=1):
             chunk_id = hit["metadata"].get("chunk_id", str(hash(hit["text"])))
             dense_ranks[chunk_id] = rank
             dense_scores[chunk_id] = hit.get("score", 0.0)
             items_by_id[chunk_id] = hit
-            fused_scores[chunk_id] = fused_scores.get(chunk_id, 0.0) + (1.0 / (rrf_k + rank))
+            fused_scores[chunk_id] = fused_scores.get(chunk_id, 0.0) + (
+                1.0 / (rrf_k + rank)
+            )
 
         for rank, hit in enumerate(sparse_hits, start=1):
             chunk_id = hit["metadata"].get("chunk_id", str(hash(hit["text"])))
@@ -131,33 +141,39 @@ class HybridRetriever:
             sparse_scores[chunk_id] = hit.get("score", 0.0)
             if chunk_id not in items_by_id:
                 items_by_id[chunk_id] = hit
-            fused_scores[chunk_id] = fused_scores.get(chunk_id, 0.0) + (1.0 / (rrf_k + rank))
+            fused_scores[chunk_id] = fused_scores.get(chunk_id, 0.0) + (
+                1.0 / (rrf_k + rank)
+            )
 
-        sorted_ids = sorted(fused_scores.keys(), key=lambda cid: fused_scores[cid], reverse=True)
+        sorted_ids = sorted(
+            fused_scores.keys(), key=lambda cid: fused_scores[cid], reverse=True
+        )
         results = []
 
         for final_rank, cid in enumerate(sorted_ids[:top_k], start=1):
             hit = items_by_id[cid]
-            results.append({
-                "rank": final_rank,
-                "fused_score": round(fused_scores[cid], 6),
-                "dense_rank": dense_ranks.get(cid),
-                "sparse_rank": sparse_ranks.get(cid),
-                "dense_score": round(dense_scores.get(cid, 0.0), 4),
-                "sparse_score": round(sparse_scores.get(cid, 0.0), 4),
-                "text": hit["text"],
-                "metadata": hit["metadata"],
-            })
+            results.append(
+                {
+                    "rank": final_rank,
+                    "fused_score": round(fused_scores[cid], 6),
+                    "dense_rank": dense_ranks.get(cid),
+                    "sparse_rank": sparse_ranks.get(cid),
+                    "dense_score": round(dense_scores.get(cid, 0.0), 4),
+                    "sparse_score": round(sparse_scores.get(cid, 0.0), 4),
+                    "text": hit["text"],
+                    "metadata": hit["metadata"],
+                }
+            )
 
         return results
 
     def _convex_fusion(
         self,
-        dense_hits: List[Dict[str, Any]],
-        sparse_hits: List[Dict[str, Any]],
+        dense_hits: list[dict[str, Any]],
+        sparse_hits: list[dict[str, Any]],
         alpha: float,
         top_k: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Convex linear fusion with min-max normalization."""
         # Normalize dense scores
         dense_map = {}
@@ -188,7 +204,7 @@ class HybridRetriever:
                 }
 
         all_cids = set(dense_map.keys()) | set(sparse_map.keys())
-        scored: List[tuple[str, float]] = []
+        scored: list[tuple[str, float]] = []
 
         for cid in all_cids:
             d_norm = dense_map[cid]["norm"] if cid in dense_map else 0.0
@@ -201,13 +217,19 @@ class HybridRetriever:
 
         for rank, (cid, score) in enumerate(scored[:top_k], start=1):
             hit = dense_map[cid]["hit"] if cid in dense_map else sparse_map[cid]["hit"]
-            results.append({
-                "rank": rank,
-                "fused_score": round(score, 4),
-                "dense_score": round(dense_map[cid]["raw"], 4) if cid in dense_map else 0.0,
-                "sparse_score": round(sparse_map[cid]["raw"], 4) if cid in sparse_map else 0.0,
-                "text": hit["text"],
-                "metadata": hit["metadata"],
-            })
+            results.append(
+                {
+                    "rank": rank,
+                    "fused_score": round(score, 4),
+                    "dense_score": round(dense_map[cid]["raw"], 4)
+                    if cid in dense_map
+                    else 0.0,
+                    "sparse_score": round(sparse_map[cid]["raw"], 4)
+                    if cid in sparse_map
+                    else 0.0,
+                    "text": hit["text"],
+                    "metadata": hit["metadata"],
+                }
+            )
 
         return results

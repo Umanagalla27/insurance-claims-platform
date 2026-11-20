@@ -36,7 +36,9 @@ if sys.platform != "win32" or os.getenv("ENABLE_WINDOWS_FAISS", "0") == "1":
         _test_index = faiss.IndexFlatIP(4)
         FAISS_AVAILABLE = True
     except (ImportError, Exception, BaseException) as e:
-        logger.info("FAISS binary acceleration unavailable (%s); using NumPy vector engine.", e)
+        logger.info(
+            "FAISS binary acceleration unavailable (%s); using NumPy vector engine.", e
+        )
         faiss = None  # type: ignore
 else:
     logger.info("Using native NumPy vector similarity engine on Windows platform.")
@@ -79,8 +81,11 @@ class FAISSVectorStore:
 
         self._vectors: list[np.ndarray] = []
         self.metadata_store: list[dict[str, Any]] = []
-        logger.info("Initialized VectorStore using engine: %s (dimension=%d)",
-                    self._engine_type, self.dimension)
+        logger.info(
+            "Initialized VectorStore using engine: %s (dimension=%d)",
+            self._engine_type,
+            self.dimension,
+        )
 
     @property
     def total_vectors(self) -> int:
@@ -149,8 +154,11 @@ class FAISSVectorStore:
                     }
                 )
 
-        logger.info("Successfully indexed %d chunks (total vectors: %d)",
-                    len(chunks), self.total_vectors)
+        logger.info(
+            "Successfully indexed %d chunks (total vectors: %d)",
+            len(chunks),
+            self.total_vectors,
+        )
 
     def search(
         self,
@@ -165,7 +173,9 @@ class FAISSVectorStore:
 
         query_vec = self.embedder.embed_query(query).astype(np.float32)
 
-        candidate_k = min(self.total_vectors, top_k * 4 if policy_type_filter else top_k)
+        candidate_k = min(
+            self.total_vectors, top_k * 4 if policy_type_filter else top_k
+        )
 
         if self.use_faiss and self._faiss_index is not None:
             q_matrix = query_vec.reshape(1, -1)
@@ -248,7 +258,9 @@ class FAISSVectorStore:
                 f,
                 indent=2,
             )
-        logger.info("Saved vector store to %s and metadata to %s", index_path, metadata_path)
+        logger.info(
+            "Saved vector store to %s and metadata to %s", index_path, metadata_path
+        )
 
     @classmethod
     def load(
@@ -259,7 +271,9 @@ class FAISSVectorStore:
     ) -> FAISSVectorStore:
         """Load persisted vector store and metadata from disk."""
         if not metadata_path.exists():
-            raise FileNotFoundError(f"Vector metadata file not found at {metadata_path}")
+            raise FileNotFoundError(
+                f"Vector metadata file not found at {metadata_path}"
+            )
 
         with open(metadata_path, encoding="utf-8") as f:
             data = json.load(f)
@@ -294,6 +308,9 @@ class FAISSVectorStore:
                 store._vectors = list(embs)
 
         store.metadata_store = data["metadata"]
-        logger.info("Loaded vector store with %d vectors (engine: %s)",
-                    store.total_vectors, store.engine_type)
+        logger.info(
+            "Loaded vector store with %d vectors (engine: %s)",
+            store.total_vectors,
+            store.engine_type,
+        )
         return store

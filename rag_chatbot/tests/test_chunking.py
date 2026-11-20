@@ -90,7 +90,15 @@ class TestIngestionPipeline:
 
         # Check coverage across all 7 categories
         categories = {c.policy_type for c in chunks}
-        expected_cats = {"Auto", "Property", "Medical", "Liability", "Life", "Travel", "Disability"}
+        expected_cats = {
+            "Auto",
+            "Property",
+            "Medical",
+            "Liability",
+            "Life",
+            "Travel",
+            "Disability",
+        }
         assert categories == expected_cats
 
     def test_chunks_manifest_schema_consistency(self) -> None:
@@ -105,4 +113,12 @@ class TestIngestionPipeline:
             assert chunk.chunk_id != ""
             assert chunk.text != ""
             assert len(chunk.text) == chunk.char_length
-            assert chunk.policy_type in ["Auto", "Property", "Medical", "Liability", "Life", "Travel", "Disability"]
+            assert chunk.policy_type in [
+                "Auto",
+                "Property",
+                "Medical",
+                "Liability",
+                "Life",
+                "Travel",
+                "Disability",
+            ]

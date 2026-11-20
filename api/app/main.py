@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -63,7 +64,9 @@ def create_app() -> FastAPI:
     # Convenience liveness alias at root /health for Kubernetes / AWS Target Groups
     app.include_router(health_router, prefix="")
 
-    logger.info("FastAPI application created with API prefix: %s", settings.API_V1_PREFIX)
+    logger.info(
+        "FastAPI application created with API prefix: %s", settings.API_V1_PREFIX
+    )
     return app
 
 

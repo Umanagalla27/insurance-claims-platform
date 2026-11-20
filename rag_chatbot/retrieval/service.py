@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rag_chatbot.retrieval.bm25 import BM25SearchEngine
 from rag_chatbot.retrieval.hybrid import HybridRetriever
@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_INDEX_DIR = PROJECT_ROOT / "data" / "vector_store"
-DEFAULT_MANIFEST_PATH = Path(__file__).resolve().parent.parent / "data" / "chunks_manifest.json"
+DEFAULT_MANIFEST_PATH = (
+    Path(__file__).resolve().parent.parent / "data" / "chunks_manifest.json"
+)
 
 
 class PolicyRetrievalService:
@@ -40,7 +42,7 @@ class PolicyRetrievalService:
         cls,
         index_dir: Path = DEFAULT_INDEX_DIR,
         manifest_path: Path = DEFAULT_MANIFEST_PATH,
-        embedder: Optional[BaseEmbedder] = None,
+        embedder: BaseEmbedder | None = None,
     ) -> PolicyRetrievalService:
         """Initialize service from persisted vector store and chunks manifest."""
         embedder = embedder or get_default_embedder()
@@ -58,10 +60,12 @@ class PolicyRetrievalService:
         if not manifest_path.exists():
             raise FileNotFoundError(f"Chunks manifest not found at: {manifest_path}")
 
-        with open(manifest_path, "r", encoding="utf-8") as f:
+        with open(manifest_path, encoding="utf-8") as f:
             raw_data = json.load(f)
 
-        chunks = raw_data.get("chunks", raw_data) if isinstance(raw_data, dict) else raw_data
+        chunks = (
+            raw_data.get("chunks", raw_data) if isinstance(raw_data, dict) else raw_data
+        )
 
         documents = [c.get("text", c.get("chunk_text", "")) for c in chunks]
         metadata = [
@@ -92,12 +96,12 @@ class PolicyRetrievalService:
     def retrieve(
         self,
         query: str,
-        policy_type: Optional[str] = None,
+        policy_type: str | None = None,
         top_k: int = 3,
         candidate_k: int = 8,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Perform end-to-end hybrid retrieval with reranking and formatted context prompt.
-        
+
         Returns:
             Dictionary containing:
             - 'query': original query
@@ -131,13 +135,21 @@ class PolicyRetrievalService:
 
 def main():
     """CLI benchmark query runner."""
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+    )
     service = PolicyRetrievalService.from_artifacts()
 
     test_queries = [
-        ("Is intentional arson or reckless fire covered under home insurance?", "HOMEOWNERS"),
+        (
+            "Is intentional arson or reckless fire covered under home insurance?",
+            "HOMEOWNERS",
+        ),
         ("What is the deductible and rideshare exclusion for auto accidents?", "AUTO"),
-        ("Does health insurance cover routine dental cleaning or cosmetic surgery?", "HEALTH"),
+        (
+            "Does health insurance cover routine dental cleaning or cosmetic surgery?",
+            "HEALTH",
+        ),
     ]
 
     for q, ptype in test_queries:
@@ -146,8 +158,12 @@ def main():
         print(f"QUERY: {q} (Filter: {ptype})")
         print("=" * 60)
         for c in res["chunks"]:
-            print(f"- [Rank {c['final_rank']}] Score: {c['rerank_score']} | Fused: {c['fused_score']}")
-            print(f"  Clause: {c['metadata'].get('section_title')} > {c['metadata'].get('clause_title')}")
+            print(
+                f"- [Rank {c['final_rank']}] Score: {c['rerank_score']} | Fused: {c['fused_score']}"
+            )
+            print(
+                f"  Clause: {c['metadata'].get('section_title')} > {c['metadata'].get('clause_title')}"
+            )
             print(f"  Snippet: {c['text'][:120]}...\n")
 
 

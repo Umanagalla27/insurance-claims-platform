@@ -6,29 +6,36 @@ import os
 import sys
 import threading
 import time
-from datetime import datetime, timezone
-from typing import List
-from fastapi import APIRouter, HTTPException, Request, Response, status
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Request, Response, status
 
 from api.app.config import settings
 from api.app.schemas.common import ApiResponse
-from api.app.schemas.health import ComponentReadiness, HealthStatus, ReadinessReport, SystemMetrics
+from api.app.schemas.health import (
+    ComponentReadiness,
+    HealthStatus,
+    ReadinessReport,
+    SystemMetrics,
+)
 from api.app.services.container import ServiceContainer
 
 router = APIRouter(tags=["Health & Diagnostics"])
 
 
-@router.get("/health", response_model=ApiResponse[HealthStatus], summary="Liveness Probe")
+@router.get(
+    "/health", response_model=ApiResponse[HealthStatus], summary="Liveness Probe"
+)
 def health_check() -> ApiResponse[HealthStatus]:
     """Lightweight Kubernetes / ALB liveness probe.
-    
+
     Returns 200 OK if the ASGI process is actively responding to HTTP requests.
     """
     payload = HealthStatus(
         status="healthy",
         service=settings.PROJECT_NAME,
         version=settings.VERSION,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )
     return ApiResponse(
         success=True,
@@ -37,15 +44,19 @@ def health_check() -> ApiResponse[HealthStatus]:
     )
 
 
-@router.get("/ready", response_model=ApiResponse[ReadinessReport], summary="Readiness Probe")
-def readiness_check(request: Request, response: Response) -> ApiResponse[ReadinessReport]:
+@router.get(
+    "/ready", response_model=ApiResponse[ReadinessReport], summary="Readiness Probe"
+)
+def readiness_check(
+    request: Request, response: Response
+) -> ApiResponse[ReadinessReport]:
     """Deep readiness probe checking ML models, vector database, and platform dependencies.
-    
+
     Returns 200 OK if all subsystems are loaded and ready to serve traffic.
     Returns 503 Service Unavailable if any critical subsystem is offline.
     """
     services: ServiceContainer = getattr(request.app.state, "services", None)
-    components: List[ComponentReadiness] = []
+    components: list[ComponentReadiness] = []
     overall_healthy = True
 
     # 1. Text Classification Model Probe
@@ -72,7 +83,11 @@ def readiness_check(request: Request, response: Response) -> ApiResponse[Readine
 
     # 2. Anomaly Detection Model Probe
     t0 = time.perf_counter()
-    if services and services.anomaly_detector and services.status_flags.get("anomaly_detector"):
+    if (
+        services
+        and services.anomaly_detector
+        and services.status_flags.get("anomaly_detector")
+    ):
         a_lat = (time.perf_counter() - t0) * 1000.0
         components.append(
             ComponentReadiness(
@@ -94,9 +109,15 @@ def readiness_check(request: Request, response: Response) -> ApiResponse[Readine
 
     # 3. Vector Store & RAG Engine Probe
     t0 = time.perf_counter()
-    if services and services.retrieval_service and services.status_flags.get("retrieval_service"):
+    if (
+        services
+        and services.retrieval_service
+        and services.status_flags.get("retrieval_service")
+    ):
         r_lat = (time.perf_counter() - t0) * 1000.0
-        total_vectors = getattr(services.retrieval_service.retriever.vector_store, "total_vectors", 0)
+        total_vectors = getattr(
+            services.retrieval_service.retriever.vector_store, "total_vectors", 0
+        )
         components.append(
             ComponentReadiness(
                 component="policy_vector_store",
@@ -118,7 +139,7 @@ def readiness_check(request: Request, response: Response) -> ApiResponse[Readine
     report = ReadinessReport(
         status="ready" if overall_healthy else "degraded",
         components=components,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )
 
     if not overall_healthy:
@@ -127,20 +148,29 @@ def readiness_check(request: Request, response: Response) -> ApiResponse[Readine
     return ApiResponse(
         success=overall_healthy,
         data=report,
-        message="All systems operational" if overall_healthy else "Subsystems degraded or offline",
+        message="All systems operational"
+        if overall_healthy
+        else "Subsystems degraded or offline",
     )
 
 
-@router.get("/metrics", response_model=ApiResponse[SystemMetrics], summary="Runtime Metrics")
+@router.get(
+    "/metrics", response_model=ApiResponse[SystemMetrics], summary="Runtime Metrics"
+)
 def runtime_metrics(request: Request) -> ApiResponse[SystemMetrics]:
     """Runtime telemetry reporting memory, active threads, and active model flags."""
     services: ServiceContainer = getattr(request.app.state, "services", None)
-    uptime = (time.time() - services.startup_time) if (services and services.startup_time > 0) else 0.0
+    uptime = (
+        (time.time() - services.startup_time)
+        if (services and services.startup_time > 0)
+        else 0.0
+    )
 
     # Calculate approximate process memory consumption
     memory_mb = 0.0
     try:
         import psutil
+
         process = psutil.Process(os.getpid())
         memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
     except Exception:

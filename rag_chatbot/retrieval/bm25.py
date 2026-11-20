@@ -10,8 +10,7 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 POLICY_TYPE_ALIASES = {
     "auto": "Auto",
@@ -30,7 +29,7 @@ POLICY_TYPE_ALIASES = {
 }
 
 
-def normalize_policy_type(ptype: Optional[str]) -> Optional[str]:
+def normalize_policy_type(ptype: str | None) -> str | None:
     """Map user-provided policy type synonyms to canonical category."""
     if not ptype:
         return None
@@ -38,9 +37,9 @@ def normalize_policy_type(ptype: Optional[str]) -> Optional[str]:
     return POLICY_TYPE_ALIASES.get(cleaned, cleaned.capitalize())
 
 
-def tokenize(text: str) -> List[str]:
+def tokenize(text: str) -> list[str]:
     """Tokenize text into lowercase alphanumeric tokens.
-    
+
     Preserves numbers and clause identifiers (e.g., '3.1', '2a').
     """
     if not text:
@@ -52,7 +51,7 @@ def tokenize(text: str) -> List[str]:
 
 class BM25SearchEngine:
     """Okapi BM25 index for policy document chunks.
-    
+
     Parameters:
         k1: Term frequency saturation parameter (typical: 1.2 to 2.0).
         b: Document length normalization parameter (typical: 0.75).
@@ -63,16 +62,18 @@ class BM25SearchEngine:
         self.b = float(b)
         self.corpus_size: int = 0
         self.avg_doc_len: float = 0.0
-        self.doc_lengths: List[int] = []
-        self.doc_token_counts: List[Counter] = []
-        self.doc_frequencies: Dict[str, int] = {}
-        self.idf_cache: Dict[str, float] = {}
-        self.metadata: List[Dict[str, Any]] = []
-        self.documents: List[str] = []
+        self.doc_lengths: list[int] = []
+        self.doc_token_counts: list[Counter] = []
+        self.doc_frequencies: dict[str, int] = {}
+        self.idf_cache: dict[str, float] = {}
+        self.metadata: list[dict[str, Any]] = []
+        self.documents: list[str] = []
 
-    def fit(self, documents: List[str], metadata: Optional[List[Dict[str, Any]]] = None) -> BM25SearchEngine:
+    def fit(
+        self, documents: list[str], metadata: list[dict[str, Any]] | None = None
+    ) -> BM25SearchEngine:
         """Build the inverted index and compute BM25 statistics from raw texts.
-        
+
         Args:
             documents: List of document strings (chunks).
             metadata: Parallel list of chunk metadata dictionaries.
@@ -99,10 +100,12 @@ class BM25SearchEngine:
             counts = Counter(tokens)
             self.doc_token_counts.append(counts)
 
-            for token in counts.keys():
+            for token in counts:
                 self.doc_frequencies[token] = self.doc_frequencies.get(token, 0) + 1
 
-        self.avg_doc_len = total_length / self.corpus_size if self.corpus_size > 0 else 0.0
+        self.avg_doc_len = (
+            total_length / self.corpus_size if self.corpus_size > 0 else 0.0
+        )
 
         # Precompute RSJ IDF
         self.idf_cache = {}
@@ -118,10 +121,10 @@ class BM25SearchEngine:
         self,
         query: str,
         top_k: int = 5,
-        policy_type_filter: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        policy_type_filter: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Score all documents against query using BM25 and return top_k matches.
-        
+
         Args:
             query: User's search prompt.
             top_k: Number of highest-ranked documents to return.
@@ -139,7 +142,7 @@ class BM25SearchEngine:
         if not active_tokens:
             return []
 
-        scores: List[tuple[int, float]] = []
+        scores: list[tuple[int, float]] = []
 
         k1 = self.k1
         b = self.b
@@ -178,11 +181,13 @@ class BM25SearchEngine:
 
         results = []
         for rank, (doc_idx, score) in enumerate(top_matches, start=1):
-            results.append({
-                "rank": rank,
-                "score": float(score),
-                "text": self.documents[doc_idx],
-                "metadata": self.metadata[doc_idx],
-            })
+            results.append(
+                {
+                    "rank": rank,
+                    "score": float(score),
+                    "text": self.documents[doc_idx],
+                    "metadata": self.metadata[doc_idx],
+                }
+            )
 
         return results

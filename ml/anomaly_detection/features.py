@@ -74,10 +74,16 @@ class AnomalyFeatureExtractor:
         """Join staging datasets, compute category statistics, and engineer feature matrix."""
         claims = pd.read_csv(claims_path)
         policies = pd.read_csv(policies_path).drop_duplicates(subset=["policy_id"])
-        customers = pd.read_csv(customers_path).drop_duplicates(subset=["customer_id"], keep="last")
+        customers = pd.read_csv(customers_path).drop_duplicates(
+            subset=["customer_id"], keep="last"
+        )
 
-        logger.info("Loaded staging data: %d claims, %d policies, %d customers",
-                    len(claims), len(policies), len(customers))
+        logger.info(
+            "Loaded staging data: %d claims, %d policies, %d customers",
+            len(claims),
+            len(policies),
+            len(customers),
+        )
 
         # 1:1 Left joins
         merged = claims.merge(
@@ -157,10 +163,21 @@ class AnomalyFeatureExtractor:
         ratio = df["claim_amount"] / cov_limit
         exceeds_cov = (ratio > 1.0).astype(float)
 
-        is_round = ((df["claim_amount"] % 1000 == 0) & (df["claim_amount"] >= 10000)).astype(float)
+        is_round = (
+            (df["claim_amount"] % 1000 == 0) & (df["claim_amount"] >= 10000)
+        ).astype(float)
 
-        cat_means = df["claim_category"].map(self.category_stats.means).fillna(df["claim_amount"])
-        cat_stds = df["claim_category"].map(self.category_stats.stds).fillna(1.0).replace(0, 1.0)
+        cat_means = (
+            df["claim_category"]
+            .map(self.category_stats.means)
+            .fillna(df["claim_amount"])
+        )
+        cat_stds = (
+            df["claim_category"]
+            .map(self.category_stats.stds)
+            .fillna(1.0)
+            .replace(0, 1.0)
+        )
         zscores = (df["claim_amount"] - cat_means) / cat_stds
 
         features_dict = {

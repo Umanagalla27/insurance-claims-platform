@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import List
 
 
 class Settings:
@@ -22,7 +21,7 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # CORS
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: list[str] = [
         origin.strip()
         for origin in os.getenv("CORS_ORIGINS", "*").split(",")
         if origin.strip()
@@ -38,9 +37,7 @@ class Settings:
     ANOMALY_MODEL_PATH: Path = (
         PROJECT_ROOT / "ml" / "artifacts" / "isolation_forest_anomaly.joblib"
     )
-    ANOMALY_STATS_PATH: Path = (
-        PROJECT_ROOT / "ml" / "artifacts" / "category_stats.json"
-    )
+    ANOMALY_STATS_PATH: Path = PROJECT_ROOT / "ml" / "artifacts" / "category_stats.json"
 
     # RAG / Vector Store Paths
     VECTOR_INDEX_DIR: Path = PROJECT_ROOT / "data" / "vector_store"
@@ -58,9 +55,13 @@ class Settings:
     # Redis Cache Settings
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
-    REDIS_PASSWORD: Optional[str] = os.getenv("REDIS_PASSWORD", None)
+    REDIS_PASSWORD: str | None = os.getenv("REDIS_PASSWORD", None)
     REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
-    REDIS_ENABLED: bool = os.getenv("REDIS_ENABLED", "false").lower() in ("true", "1", "yes")
+    REDIS_ENABLED: bool = os.getenv("REDIS_ENABLED", "false").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
 
 settings = Settings()

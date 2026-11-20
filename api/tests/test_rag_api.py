@@ -3,7 +3,6 @@ Integration and Unit Tests for Policy RAG Chatbot and In-Memory Caching Endpoint
 Verifies grounded search, citation assembly, metadata filtering, and cache acceleration.
 """
 
-from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
@@ -42,7 +41,9 @@ def fresh_cache():
 class TestPolicyRAGAPI:
     """Test suite covering Policy RAG querying, citation assembly, and caching."""
 
-    def test_policy_query_success_with_citations(self, rag_service_instance, fresh_cache):
+    def test_policy_query_success_with_citations(
+        self, rag_service_instance, fresh_cache
+    ):
         """Verify successful grounded query returns citations and authoritative answer."""
         request = PolicyQueryRequest(
             query="What is the deductible and rideshare exclusion for auto accidents?",
@@ -75,7 +76,9 @@ class TestPolicyRAGAPI:
         assert len(top_citation.section_title) > 0
         assert len(top_citation.snippet) > 0
 
-    def test_semantic_caching_returns_instant_hit(self, rag_service_instance, fresh_cache):
+    def test_semantic_caching_returns_instant_hit(
+        self, rag_service_instance, fresh_cache
+    ):
         """Verify identical query hits cache with cache_hit=True and sub-millisecond latency."""
         request = PolicyQueryRequest(
             query="Does homeowner insurance cover sudden water pipe burst?",
@@ -138,9 +141,13 @@ class TestPolicyRAGAPI:
         )
 
         # 1. Miss
-        query_policy(request=request, rag_service=rag_service_instance, cache=fresh_cache)
+        query_policy(
+            request=request, rag_service=rag_service_instance, cache=fresh_cache
+        )
         # 2. Hit
-        query_policy(request=request, rag_service=rag_service_instance, cache=fresh_cache)
+        query_policy(
+            request=request, rag_service=rag_service_instance, cache=fresh_cache
+        )
 
         stats_res: ApiResponse[CacheStatsResponse] = get_cache_stats(cache=fresh_cache)
         assert stats_res.success is True
@@ -170,7 +177,9 @@ class TestPolicyRAGAPI:
             use_cache=False,
         )
 
-        resp1 = query_policy(request=request, rag_service=rag_service_instance, cache=fresh_cache)
+        resp1 = query_policy(
+            request=request, rag_service=rag_service_instance, cache=fresh_cache
+        )
         assert resp1.data.cache_hit is False
 
         stats = get_cache_stats(cache=fresh_cache).data

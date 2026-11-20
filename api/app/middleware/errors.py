@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -17,7 +17,9 @@ def setup_exception_handlers(app: FastAPI) -> None:
     """Register custom exception handlers on FastAPI application instance."""
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
         details = []
         for error in exc.errors():
@@ -42,7 +44,9 @@ def setup_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    async def http_exception_handler(
+        request: Request, exc: HTTPException
+    ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
         error_body = ErrorResponse(
             error_code=f"HTTP_{exc.status_code}",
@@ -56,9 +60,13 @@ def setup_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    async def unhandled_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
-        logger.exception("Unhandled server exception processing request %s: %s", request_id, exc)
+        logger.exception(
+            "Unhandled server exception processing request %s: %s", request_id, exc
+        )
 
         error_body = ErrorResponse(
             error_code="INTERNAL_SERVER_ERROR",

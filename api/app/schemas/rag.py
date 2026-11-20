@@ -2,7 +2,6 @@
 Pydantic v2 schemas for Policy RAG Chatbot and Caching endpoints.
 """
 
-from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -13,10 +12,12 @@ class PolicyQueryRequest(BaseModel):
         ...,
         min_length=3,
         max_length=1000,
-        json_schema_extra={"example": "Is flood damage covered under the standard homeowners policy?"},
+        json_schema_extra={
+            "example": "Is flood damage covered under the standard homeowners policy?"
+        },
         description="Natural language question regarding policy terms, clauses, or exclusions.",
     )
-    policy_type: Optional[str] = Field(
+    policy_type: str | None = Field(
         default=None,
         json_schema_extra={"example": "HOMEOWNERS"},
         description="Optional filter by policy type: AUTO, HEALTH, HOMEOWNERS, COMMERCIAL, LIFE, DISABILITY, CYBER.",
@@ -55,9 +56,9 @@ class PolicyAnswerResponse(BaseModel):
     """Consolidated answer with grounding citations and latency telemetry."""
 
     query: str
-    policy_type_filter: Optional[str] = None
+    policy_type_filter: str | None = None
     answer: str
-    citations: List[PolicyChunkCitation]
+    citations: list[PolicyChunkCitation]
     confidence_score: float
     model_used: str
     cache_hit: bool = False

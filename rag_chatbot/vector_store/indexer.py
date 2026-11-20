@@ -17,7 +17,9 @@ from typing import Any
 from rag_chatbot.ingestion.chunker import PolicyChunk
 from rag_chatbot.vector_store.faiss_store import FAISSVectorStore
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 logger = logging.getLogger("rag_chatbot.vector_store.indexer")
 
 DEFAULT_MANIFEST = Path("rag_chatbot/data/chunks_manifest.json")
@@ -32,7 +34,9 @@ def build_and_save_vector_index(
 ) -> tuple[FAISSVectorStore, dict[str, Any]]:
     """Load chunks manifest, index vectors into FAISS, and serialize to disk."""
     if not manifest_path.exists():
-        raise FileNotFoundError(f"Manifest not found at {manifest_path}. Run ingestion pipeline first.")
+        raise FileNotFoundError(
+            f"Manifest not found at {manifest_path}. Run ingestion pipeline first."
+        )
 
     with open(manifest_path, encoding="utf-8") as f:
         manifest_data = json.load(f)
@@ -47,8 +51,12 @@ def build_and_save_vector_index(
     start_time = time.perf_counter()
     store.add_chunks(chunks)
     indexing_duration = time.perf_counter() - start_time
-    logger.info("Indexed %d chunks in %.3f seconds (%.2f chunks/sec)",
-                len(chunks), indexing_duration, len(chunks) / max(indexing_duration, 0.001))
+    logger.info(
+        "Indexed %d chunks in %.3f seconds (%.2f chunks/sec)",
+        len(chunks),
+        indexing_duration,
+        len(chunks) / max(indexing_duration, 0.001),
+    )
 
     # Persist artifacts
     store.save(index_path, metadata_path)
@@ -146,10 +154,14 @@ if __name__ == "__main__":
     print(f"Total Chunks Indexed:  {build_stats['indexed_chunks_count']}")
     print(f"Vector Dimensionality: {build_stats['embedding_dimension']}")
     print(f"Index File Size:       {build_stats['index_size_bytes'] / 1024.0:.2f} KB")
-    print(f"Indexing Duration:     {build_stats['indexing_duration_seconds']:.4f} seconds")
+    print(
+        f"Indexing Duration:     {build_stats['indexing_duration_seconds']:.4f} seconds"
+    )
     print("\nSample Retrieval Hits Across 7 Policy Lines:")
     for b in benchmarks:
-        print(f"\n[Scenario: {b['scenario']}] (Latency: {b['latency_ms']:.2f} ms | Score: {b['top_hit_score']})")
+        print(
+            f"\n[Scenario: {b['scenario']}] (Latency: {b['latency_ms']:.2f} ms | Score: {b['top_hit_score']})"
+        )
         print(f"  Query:      {b['query']}")
         print(f"  Breadcrumb: {b['top_hit_breadcrumb']}")
         print(f"  Snippet:    {b['top_hit_snippet']}")

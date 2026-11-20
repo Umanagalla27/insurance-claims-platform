@@ -19,16 +19,26 @@ from pydantic import BaseModel, Field
 class PolicyChunk(BaseModel):
     """Pydantic model representing an ingested semantic policy chunk."""
 
-    chunk_id: str = Field(..., description="Unique deterministic identifier for the chunk")
+    chunk_id: str = Field(
+        ..., description="Unique deterministic identifier for the chunk"
+    )
     document_id: str = Field(..., description="Source policy filename or identifier")
-    policy_type: str = Field(..., description="Standardized category: Auto, Property, Medical, etc.")
-    breadcrumb: str = Field(..., description="Full hierarchical context (Document > Section > Clause)")
+    policy_type: str = Field(
+        ..., description="Standardized category: Auto, Property, Medical, etc."
+    )
+    breadcrumb: str = Field(
+        ..., description="Full hierarchical context (Document > Section > Clause)"
+    )
     section_title: str = Field(..., description="Current parent section title")
     clause_title: str = Field(..., description="Specific sub-clause heading if present")
     text: str = Field(..., description="Contextualized chunk text payload")
     char_length: int = Field(..., description="Character count of chunk payload")
-    token_estimate: int = Field(..., description="Estimated word/token count (~char_length / 4)")
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Custom metadata tags and search filters")
+    token_estimate: int = Field(
+        ..., description="Estimated word/token count (~char_length / 4)"
+    )
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Custom metadata tags and search filters"
+    )
 
 
 class SemanticPolicyChunker:
@@ -112,7 +122,11 @@ class SemanticPolicyChunker:
                     clause_candidate = clause_splits[c_idx].strip()
                     if clause_candidate.startswith("###"):
                         current_clause = clause_candidate.lstrip("#").strip()
-                        clause_body = clause_splits[c_idx + 1] if c_idx + 1 < len(clause_splits) else ""
+                        clause_body = (
+                            clause_splits[c_idx + 1]
+                            if c_idx + 1 < len(clause_splits)
+                            else ""
+                        )
                         c_idx += 2
                     else:
                         clause_body = clause_splits[c_idx]
@@ -163,7 +177,9 @@ class SemanticPolicyChunker:
         if not clean_body:
             return []
 
-        breadcrumb = f"[{policy_type} Policy: {doc_title} > {section_title} > {clause_title}]"
+        breadcrumb = (
+            f"[{policy_type} Policy: {doc_title} > {section_title} > {clause_title}]"
+        )
 
         # If body fits comfortably in one chunk
         if len(clean_body) <= self.max_chunk_chars:
@@ -213,7 +229,11 @@ class SemanticPolicyChunker:
                 )
                 seq += 1
                 # Sliding overlap: keep end of previous text
-                overlap = current_text[-self.overlap_chars:] if len(current_text) > self.overlap_chars else ""
+                overlap = (
+                    current_text[-self.overlap_chars :]
+                    if len(current_text) > self.overlap_chars
+                    else ""
+                )
                 current_text = (overlap + " ... " + p).strip() if overlap else p
 
         if current_text:

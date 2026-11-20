@@ -4,6 +4,7 @@ Asserts that services, dependencies, memory limits, and network topology conform
 """
 
 from pathlib import Path
+
 import pytest
 import yaml
 
@@ -15,7 +16,7 @@ COMPOSE_PATH = PROJECT_ROOT / "docker-compose.yml"
 def compose_config():
     """Load and parse docker-compose.yml."""
     assert COMPOSE_PATH.is_file(), "docker-compose.yml must exist"
-    with open(COMPOSE_PATH, "r", encoding="utf-8") as f:
+    with open(COMPOSE_PATH, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -46,7 +47,9 @@ class TestDockerComposeArchitecture:
 
     def test_all_services_define_healthchecks(self, compose_config):
         for name, svc in compose_config["services"].items():
-            assert "healthcheck" in svc, f"Service {name} must have a healthcheck defined"
+            assert "healthcheck" in svc, (
+                f"Service {name} must have a healthcheck defined"
+            )
             assert "interval" in svc["healthcheck"]
             assert "timeout" in svc["healthcheck"]
 

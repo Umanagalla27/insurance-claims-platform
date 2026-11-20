@@ -1,6 +1,7 @@
 """Unit and Integration Tests for Hybrid Retrieval, BM25, and Reranking (ICIP-015)."""
 
 import pytest
+
 from rag_chatbot.retrieval.bm25 import BM25SearchEngine, normalize_policy_type, tokenize
 from rag_chatbot.retrieval.hybrid import HybridRetriever
 from rag_chatbot.retrieval.reranker import ContextReranker
@@ -93,7 +94,10 @@ class TestHybridRetriever:
 
         bm25 = BM25SearchEngine().fit(
             documents=[c["text"] for c in chunks],
-            metadata=[{"chunk_id": c["chunk_id"], "policy_type": c["policy_type"]} for c in chunks],
+            metadata=[
+                {"chunk_id": c["chunk_id"], "policy_type": c["policy_type"]}
+                for c in chunks
+            ],
         )
 
         return HybridRetriever(vector_store=vstore, bm25_engine=bm25, embedder=embedder)
@@ -111,7 +115,9 @@ class TestHybridRetriever:
 
     def test_convex_fusion_returns_valid_scores(self, setup_retriever):
         retriever = setup_retriever
-        results = retriever.search("hail storm roof shingles", top_k=1, mode="convex", alpha=0.5)
+        results = retriever.search(
+            "hail storm roof shingles", top_k=1, mode="convex", alpha=0.5
+        )
 
         assert len(results) == 1
         assert results[0]["metadata"]["chunk_id"] == "c_prop"
@@ -127,16 +133,26 @@ class TestContextReranker:
             {
                 "text": "General liability policy introduction.",
                 "fused_score": 0.03,
-                "metadata": {"clause_id": "1.0", "clause_title": "Intro", "section_title": "Overview"},
+                "metadata": {
+                    "clause_id": "1.0",
+                    "clause_title": "Intro",
+                    "section_title": "Overview",
+                },
             },
             {
                 "text": "Specific exclusion for rideshare under 3.1.",
                 "fused_score": 0.02,  # Lower base score
-                "metadata": {"clause_id": "3.1", "clause_title": "Rideshare", "section_title": "Exclusions"},
+                "metadata": {
+                    "clause_id": "3.1",
+                    "clause_title": "Rideshare",
+                    "section_title": "Exclusions",
+                },
             },
         ]
 
-        reranked = reranker.rerank(query="Does clause 3.1 apply to Uber?", candidates=candidates, top_k=2)
+        reranked = reranker.rerank(
+            query="Does clause 3.1 apply to Uber?", candidates=candidates, top_k=2
+        )
 
         # Clause 3.1 candidate should leapfrog to rank 1 due to exact boost
         assert reranked[0]["metadata"]["clause_id"] == "3.1"

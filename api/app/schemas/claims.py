@@ -2,21 +2,25 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
-from typing import Dict, List, Optional
+from datetime import UTC, date, datetime, timedelta
+
 from pydantic import BaseModel, Field, field_validator
 
 
 class ClaimAnalysisRequest(BaseModel):
     """Payload for submitting an insurance claim for real-time ML analysis and adjudication."""
 
-    claim_id: Optional[str] = Field(default=None, description="External claim reference or identifier")
+    claim_id: str | None = Field(
+        default=None, description="External claim reference or identifier"
+    )
     claim_text: str = Field(
         ...,
         min_length=5,
         max_length=5000,
         description="Free-form claim incident description, claimant narrative, or adjuster notes",
-        examples=["Rear bumper dented and taillight shattered during parking lot collision."],
+        examples=[
+            "Rear bumper dented and taillight shattered during parking lot collision."
+        ],
     )
     claim_amount: float = Field(
         ...,
@@ -30,15 +34,15 @@ class ClaimAnalysisRequest(BaseModel):
         description="Applicable maximum policy coverage limit in USD",
         examples=[50000.00],
     )
-    incident_date: Optional[str] = Field(
+    incident_date: str | None = Field(
         default=None,
         description="Incident occurrence date in YYYY-MM-DD format (defaults to 5 days prior to filing)",
     )
-    filing_date: Optional[str] = Field(
+    filing_date: str | None = Field(
         default=None,
         description="Claim submission date in YYYY-MM-DD format (defaults to current date)",
     )
-    policy_start_date: Optional[str] = Field(
+    policy_start_date: str | None = Field(
         default=None,
         description="Policy effective start date in YYYY-MM-DD format (defaults to 180 days prior)",
     )
@@ -66,22 +70,46 @@ class ClaimAnalysisRequest(BaseModel):
 class ClassificationDetail(BaseModel):
     """NLP text classification output breakdown."""
 
-    predicted_category: str = Field(..., description="Top predicted claim domain category")
-    confidence: float = Field(..., description="Softmax confidence probability for predicted category [0.0 - 1.0]")
-    all_probabilities: Dict[str, float] = Field(..., description="Probabilities across all claim classes")
-    cleaned_text: str = Field(..., description="Sanitized and normalized text analyzed by TF-IDF model")
-    is_fallback: bool = Field(default=False, description="True if input text lacked signal and triggered fallback")
+    predicted_category: str = Field(
+        ..., description="Top predicted claim domain category"
+    )
+    confidence: float = Field(
+        ...,
+        description="Softmax confidence probability for predicted category [0.0 - 1.0]",
+    )
+    all_probabilities: dict[str, float] = Field(
+        ..., description="Probabilities across all claim classes"
+    )
+    cleaned_text: str = Field(
+        ..., description="Sanitized and normalized text analyzed by TF-IDF model"
+    )
+    is_fallback: bool = Field(
+        default=False,
+        description="True if input text lacked signal and triggered fallback",
+    )
 
 
 class AnomalyDetail(BaseModel):
     """Unsupervised Isolation Forest anomaly & fraud assessment."""
 
-    risk_score: float = Field(..., description="Calibrated risk index between 0.0 (safest) and 100.0 (highest risk)")
+    risk_score: float = Field(
+        ...,
+        description="Calibrated risk index between 0.0 (safest) and 100.0 (highest risk)",
+    )
     risk_tier: str = Field(..., description="Risk tier: LOW, MEDIUM, HIGH, or CRITICAL")
-    is_anomaly: bool = Field(..., description="Statistical anomaly detection boolean flag")
-    raw_anomaly_score: float = Field(..., description="Raw Isolation Forest decision function score")
-    risk_factors: List[str] = Field(default_factory=list, description="Specific risk drivers triggering fraud alerts")
-    feature_values: Dict[str, float] = Field(default_factory=dict, description="Numerical features fed into model")
+    is_anomaly: bool = Field(
+        ..., description="Statistical anomaly detection boolean flag"
+    )
+    raw_anomaly_score: float = Field(
+        ..., description="Raw Isolation Forest decision function score"
+    )
+    risk_factors: list[str] = Field(
+        default_factory=list,
+        description="Specific risk drivers triggering fraud alerts",
+    )
+    feature_values: dict[str, float] = Field(
+        default_factory=dict, description="Numerical features fed into model"
+    )
 
 
 class AdjudicationDecision(BaseModel):
@@ -91,8 +119,12 @@ class AdjudicationDecision(BaseModel):
         ...,
         description="Recommended action: AUTO_APPROVE, FAST_TRACK_REVIEW, MANUAL_AUDIT, FRAUD_INVESTIGATION_FLAG",
     )
-    confidence_score: float = Field(..., description="Composite decision confidence [0.0 - 1.0]")
-    reasons: List[str] = Field(..., description="Detailed business logic adjudication reasoning")
+    confidence_score: float = Field(
+        ..., description="Composite decision confidence [0.0 - 1.0]"
+    )
+    reasons: list[str] = Field(
+        ..., description="Detailed business logic adjudication reasoning"
+    )
     requires_supervisor_approval: bool = Field(
         default=False,
         description="True if claim exceeds auto-adjudication thresholds or triggers compliance flags",
@@ -102,13 +134,21 @@ class AdjudicationDecision(BaseModel):
 class ClaimAnalysisResponse(BaseModel):
     """Unified response containing multi-model inference and automated adjudication."""
 
-    claim_id: Optional[str] = Field(default=None, description="External claim reference")
-    classification: ClassificationDetail = Field(..., description="NLP classification model output")
-    anomaly_assessment: AnomalyDetail = Field(..., description="Fraud risk and anomaly scoring")
-    adjudication: AdjudicationDecision = Field(..., description="Actionable adjudication decision")
-    latency_ms: float = Field(..., description="Total pipeline execution latency in milliseconds")
+    claim_id: str | None = Field(default=None, description="External claim reference")
+    classification: ClassificationDetail = Field(
+        ..., description="NLP classification model output"
+    )
+    anomaly_assessment: AnomalyDetail = Field(
+        ..., description="Fraud risk and anomaly scoring"
+    )
+    adjudication: AdjudicationDecision = Field(
+        ..., description="Actionable adjudication decision"
+    )
+    latency_ms: float = Field(
+        ..., description="Total pipeline execution latency in milliseconds"
+    )
     processed_at: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="ISO 8601 UTC timestamp of analysis completion",
     )
 
@@ -116,7 +156,7 @@ class ClaimAnalysisResponse(BaseModel):
 class BatchClaimAnalysisRequest(BaseModel):
     """Batch analysis request containing up to 50 claims."""
 
-    claims: List[ClaimAnalysisRequest] = Field(
+    claims: list[ClaimAnalysisRequest] = Field(
         ...,
         min_length=1,
         max_length=50,
@@ -128,7 +168,15 @@ class BatchClaimAnalysisResponse(BaseModel):
     """Batch adjudication summary and individual results."""
 
     total_claims: int = Field(..., description="Total claims processed in batch")
-    results: List[ClaimAnalysisResponse] = Field(..., description="Individual claim evaluation results")
-    action_summary: Dict[str, int] = Field(..., description="Counts of claims categorized by adjudication action")
-    average_risk_score: float = Field(..., description="Mean fraud risk score across batch")
-    total_latency_ms: float = Field(..., description="Total batch execution time in milliseconds")
+    results: list[ClaimAnalysisResponse] = Field(
+        ..., description="Individual claim evaluation results"
+    )
+    action_summary: dict[str, int] = Field(
+        ..., description="Counts of claims categorized by adjudication action"
+    )
+    average_risk_score: float = Field(
+        ..., description="Mean fraud risk score across batch"
+    )
+    total_latency_ms: float = Field(
+        ..., description="Total batch execution time in milliseconds"
+    )

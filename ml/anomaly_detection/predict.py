@@ -26,12 +26,26 @@ DEFAULT_MODEL_PATH = Path("ml/artifacts/isolation_forest_anomaly.joblib")
 class AnomalyResult(BaseModel):
     """Pydantic model representing an anomaly risk assessment."""
 
-    is_anomaly: bool = Field(..., description="True if claim is identified as a statistical anomaly")
-    risk_score: float = Field(..., description="Calibrated risk score between 0.0 (safest) and 100.0 (highest risk)")
-    risk_tier: str = Field(..., description="Risk tier classification: LOW, MEDIUM, HIGH, or CRITICAL")
-    raw_anomaly_score: float = Field(..., description="Raw decision function score from Isolation Forest")
-    risk_factors: list[str] = Field(default_factory=list, description="Rule-based explainability factors driving risk")
-    feature_values: dict[str, float] = Field(default_factory=dict, description="Engineered features used by model")
+    is_anomaly: bool = Field(
+        ..., description="True if claim is identified as a statistical anomaly"
+    )
+    risk_score: float = Field(
+        ...,
+        description="Calibrated risk score between 0.0 (safest) and 100.0 (highest risk)",
+    )
+    risk_tier: str = Field(
+        ..., description="Risk tier classification: LOW, MEDIUM, HIGH, or CRITICAL"
+    )
+    raw_anomaly_score: float = Field(
+        ..., description="Raw decision function score from Isolation Forest"
+    )
+    risk_factors: list[str] = Field(
+        default_factory=list,
+        description="Rule-based explainability factors driving risk",
+    )
+    feature_values: dict[str, float] = Field(
+        default_factory=dict, description="Engineered features used by model"
+    )
 
 
 class ClaimAnomalyDetector:
@@ -40,13 +54,17 @@ class ClaimAnomalyDetector:
     def __init__(self, model_path: Path | str = DEFAULT_MODEL_PATH) -> None:
         self.model_path = Path(model_path)
         if not self.model_path.exists():
-            raise FileNotFoundError(f"Anomaly model artifact not found at {self.model_path}")
+            raise FileNotFoundError(
+                f"Anomaly model artifact not found at {self.model_path}"
+            )
 
         payload = joblib.load(self.model_path)
         self.pipeline = payload["pipeline"]
         self.feature_names: list[str] = payload["feature_names"]
         self.category_stats = CategoryStats.from_dict(payload["category_stats"])
-        self.calibration = payload.get("score_calibration", {"score_min": -0.15, "score_max": 0.20})
+        self.calibration = payload.get(
+            "score_calibration", {"score_min": -0.15, "score_max": 0.20}
+        )
         self.metadata: dict[str, Any] = payload.get("metadata", {})
 
         logger.info("ClaimAnomalyDetector initialized from %s", self.model_path)
@@ -127,13 +145,19 @@ class ClaimAnomalyDetector:
         if exceeds_cov:
             factors.append(f"Claim exceeds policy coverage limit (Ratio: {ratio:.2f}x)")
         if early_filing:
-            factors.append(f"Early filing: Claim incident occurred {days_since_start} days after policy inception")
+            factors.append(
+                f"Early filing: Claim incident occurred {days_since_start} days after policy inception"
+            )
         if is_round:
             factors.append(f"Suspiciously round claim amount (${claim_amount:,.2f})")
         if zscore >= 2.0:
-            factors.append(f"Statistical category outlier (Z-Score: +{zscore:.2f} vs {claim_category} baseline)")
+            factors.append(
+                f"Statistical category outlier (Z-Score: +{zscore:.2f} vs {claim_category} baseline)"
+            )
         if credit_score < 600:
-            factors.append(f"Adverse credit profile ({int(credit_score)}) combined with high claim ratio")
+            factors.append(
+                f"Adverse credit profile ({int(credit_score)}) combined with high claim ratio"
+            )
 
         return AnomalyResult(
             is_anomaly=is_anomaly,

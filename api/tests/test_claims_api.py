@@ -1,6 +1,7 @@
 """Unit and Integration Tests for Claims Analysis and Adjudication API (ICIP-017)."""
 
 from datetime import date, timedelta
+
 import pytest
 from pydantic import ValidationError
 
@@ -71,12 +72,15 @@ class TestClaimsAnalysisAPI:
         assert data.adjudication.action == "FRAUD_INVESTIGATION_FLAG"
         assert data.adjudication.requires_supervisor_approval is True
         reasons_text = " ".join(data.adjudication.reasons)
-        assert "exceeds policy coverage limit" in reasons_text.lower() or "limit" in reasons_text.lower()
+        assert (
+            "exceeds policy coverage limit" in reasons_text.lower()
+            or "limit" in reasons_text.lower()
+        )
 
     def test_early_filing_round_number_anomaly_flag(self, initialized_services):
         today = date.today()
         pol_start = today - timedelta(days=3)  # Policy only 3 days old!
-        inc_date = today - timedelta(days=1)   # Incident within 2 days!
+        inc_date = today - timedelta(days=1)  # Incident within 2 days!
 
         req = ClaimAnalysisRequest(
             claim_id="CLM-EARLY-003",
@@ -123,7 +127,7 @@ class TestClaimsAnalysisAPI:
         assert data.adjudication.action in ("MANUAL_AUDIT", "FAST_TRACK_REVIEW")
 
     def test_batch_claim_analysis_aggregation(self, initialized_services):
-        today = date.today()
+        date.today()
         batch_req = BatchClaimAnalysisRequest(
             claims=[
                 ClaimAnalysisRequest(

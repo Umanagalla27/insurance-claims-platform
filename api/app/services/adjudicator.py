@@ -7,7 +7,6 @@ transparent adjudication recommendation (AUTO_APPROVE, FAST_TRACK, MANUAL_AUDIT,
 
 from __future__ import annotations
 
-from typing import List
 from api.app.schemas.claims import AdjudicationDecision, ClaimAnalysisRequest
 from ml.anomaly_detection.predict import AnomalyResult
 from ml.classification.predict import PredictionResult
@@ -32,7 +31,7 @@ class ClaimsAdjudicator:
         anomaly: AnomalyResult,
     ) -> AdjudicationDecision:
         """Synthesize multi-model outputs into a single actionable decision."""
-        reasons: List[str] = []
+        reasons: list[str] = []
         action: str
         requires_supervisor: bool = False
 
@@ -47,7 +46,10 @@ class ClaimsAdjudicator:
             reasons.append(
                 f"Requested claim amount (${request.claim_amount:,.2f}) strictly exceeds policy coverage limit (${request.coverage_limit:,.2f})."
             )
-        elif anomaly.risk_tier == "CRITICAL" or risk_score >= cls.FRAUD_INVESTIGATION_RISK_THRESHOLD:
+        elif (
+            anomaly.risk_tier == "CRITICAL"
+            or risk_score >= cls.FRAUD_INVESTIGATION_RISK_THRESHOLD
+        ):
             action = "FRAUD_INVESTIGATION_FLAG"
             requires_supervisor = True
             reasons.append(
@@ -57,7 +59,10 @@ class ClaimsAdjudicator:
                 reasons.append(f"Flagged Factor: {rf}")
 
         # Rule 2: Multiple risk indicators or high risk
-        elif len(anomaly.risk_factors) >= 2 or risk_score >= cls.MANUAL_AUDIT_RISK_THRESHOLD:
+        elif (
+            len(anomaly.risk_factors) >= 2
+            or risk_score >= cls.MANUAL_AUDIT_RISK_THRESHOLD
+        ):
             action = "MANUAL_AUDIT"
             reasons.append(
                 f"Moderate-to-high risk profile (Risk Score: {risk_score:.1f}/100) necessitates full human adjuster audit."

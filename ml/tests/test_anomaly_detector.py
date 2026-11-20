@@ -73,12 +73,16 @@ class TestFeatureExtraction:
 class TestAnomalyInference:
     """Integration tests verifying trained Isolation Forest inference and risk flags."""
 
-    def test_model_artifact_loaded_correctly(self, shared_detector: ClaimAnomalyDetector) -> None:
+    def test_model_artifact_loaded_correctly(
+        self, shared_detector: ClaimAnomalyDetector
+    ) -> None:
         assert len(shared_detector.feature_names) == 10
         assert "score_min" in shared_detector.calibration
         assert "score_max" in shared_detector.calibration
 
-    def test_routine_claim_receives_low_risk(self, shared_detector: ClaimAnomalyDetector) -> None:
+    def test_routine_claim_receives_low_risk(
+        self, shared_detector: ClaimAnomalyDetector
+    ) -> None:
         result = shared_detector.evaluate_claim(
             claim_amount=3200.0,
             claim_category="Auto",
@@ -112,7 +116,9 @@ class TestAnomalyInference:
         assert any("exceeds policy coverage" in f.lower() for f in result.risk_factors)
         assert any("early filing" in f.lower() for f in result.risk_factors)
 
-    def test_round_number_high_value_flag(self, shared_detector: ClaimAnomalyDetector) -> None:
+    def test_round_number_high_value_flag(
+        self, shared_detector: ClaimAnomalyDetector
+    ) -> None:
         result = shared_detector.evaluate_claim(
             claim_amount=50000.0,  # Suspiciously round
             claim_category="Property",

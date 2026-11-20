@@ -1,22 +1,34 @@
-name: CI — Lint, Test, Build
+# ==============================================================================
+# GitHub Actions CI/CD Pipeline
+# Project: Insurance Claims Intelligence Platform (ICIP)
+# ==============================================================================
+# Workflow Architecture:
+#   1. Stage 1 (lint): Static analysis, import order, and code formatting with Ruff.
+#   2. Stage 2 (test): Full regression suite across API, ML, and RAG modules.
+#   3. Stage 3 (docker-build-and-audit): Multi-stage container build and security audit.
+# ==============================================================================
 
-# WHY: This runs automatically on every PR and push to main.
-# It is the "gate" — if this fails, the PR cannot be merged.
-# This is the GitHub Actions part of our CI/CD pipeline.
-# Jenkins (Sprint 7) will do the same thing but runs on-premise.
+name: CI — Lint, Test, and Container Security Pipeline
 
-on:
+"on":
   push:
     branches: [main, develop]
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-and-test:
+  # ----------------------------------------------------------------------------
+  # Stage 1: Static Code Analysis & Formatting (Fail-Fast Gate)
+  # ----------------------------------------------------------------------------
+  lint:
+    name: Code Quality & Formatting (Ruff)
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Python 3.12
@@ -24,32 +36,99 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Cache pip dependencies
+      - name: Install Ruff
+        run: pip install ruff==0.7.4
+
+      - name: Run Ruff Lint Checks
+        run: ruff check .
+
+      - name: Run Ruff Format Verification
+        run: ruff format --check .
+
+  # ----------------------------------------------------------------------------
+  # Stage 2: Automated Unit, Integration, and Regression Tests
+  # ----------------------------------------------------------------------------
+  test:
+    name: Regression Test Suite (Pytest)
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache Pip Dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Run linter (ruff)
-        run: ruff check .
-
-      - name: Run tests
-        run: pytest -v --cov=. --cov-report=xml
+      - name: Run Full Regression Suite
+        run: |
+          mkdir -p reports
+          pytest -v api/tests/ rag_chatbot/tests/ ml/tests/ \
+            --junitxml=reports/junit-results.xml \
+            --cov=api --cov=ml --cov=rag_chatbot \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-report=term-missing
         env:
-          APP_ENV: testing
-          MYSQL_HOST: localhost
-          MYSQL_PORT: 3306
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          ENV: testing
+          DEBUG: "false"
+          ENABLE_EXTERNAL_LLM: "false"
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v4
+      - name: Upload Test and Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          file: ./coverage.xml
-          fail_ci_if_error: false   # Don't fail build if codecov is down
+          name: test-and-coverage-reports
+          path: reports/
+          retention-days: 14
+
+  # ----------------------------------------------------------------------------
+  # Stage 3: Container Build & Security Audit
+  # ----------------------------------------------------------------------------
+  docker-build-and-audit:
+    name: Docker Multi-Stage Build & Security Audit
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run Docker Configuration Verification Script
+        run: |
+          python scripts/verify_docker_setup.py
+          python scripts/verify_docker_compose.py
+
+      - name: Build Production Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: |
+            insurance-claims-api:${{ github.sha }}
+            insurance-claims-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify Non-Root Security Policy in Image
+        run: |
+          echo "Verifying Dockerfile non-root enforcement (UID 10001)..."
+          grep -q "USER appuser" Dockerfile || (echo "FAILED: Root execution detected!" && exit 1)
+          grep -q "HEALTHCHECK" Dockerfile || (echo "FAILED: Missing HEALTHCHECK instruction!" && exit 1)
+          echo "Container security policy audit passed."

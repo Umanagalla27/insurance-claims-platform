@@ -104,7 +104,9 @@ class TestFAISSVectorStore:
         store.add_chunks(sample_chunks)
 
         # Query mentions 'surgery' and 'deductible', but filtered strictly to Medical
-        results = store.search("deductible surgery", top_k=3, policy_type_filter="Medical")
+        results = store.search(
+            "deductible surgery", top_k=3, policy_type_filter="Medical"
+        )
         assert len(results) == 1
         assert results[0].policy_type == "Medical"
         assert results[0].chunk_id == "CHK_MEDICAL_01"

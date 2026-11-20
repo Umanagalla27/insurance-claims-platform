@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class TimingMiddleware:
@@ -33,7 +34,7 @@ class TimingMiddleware:
     ) -> list[tuple[bytes, bytes]]:
         """Append standardized performance and tracing headers."""
         updated = list(headers)
-        updated.append((b"x-process-time", f"{process_time:.6f}s".encode("utf-8")))
+        updated.append((b"x-process-time", f"{process_time:.6f}s".encode()))
         updated.append((b"x-request-id", request_id.encode("utf-8")))
         return updated
 
@@ -55,7 +56,9 @@ class TimingMiddleware:
             if message["type"] == "http.response.start":
                 process_time = time.perf_counter() - start_time
                 orig_headers = message.get("headers", [])
-                message["headers"] = self.attach_timing_headers(orig_headers, process_time, request_id)
+                message["headers"] = self.attach_timing_headers(
+                    orig_headers, process_time, request_id
+                )
             await send(message)
 
         await self.app(scope, receive, send_wrapper)

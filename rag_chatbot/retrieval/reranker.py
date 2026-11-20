@@ -8,7 +8,7 @@ clause reference boosts, producing citation-tagged context for LLM generation.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ContextReranker:
@@ -25,11 +25,11 @@ class ContextReranker:
     def rerank(
         self,
         query: str,
-        candidates: List[Dict[str, Any]],
+        candidates: list[dict[str, Any]],
         top_k: int = 3,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Rerank candidates based on fine-grained lexical and structural features.
-        
+
         Args:
             query: User's prompt / question.
             candidates: Candidate list from HybridRetriever.
@@ -62,10 +62,14 @@ class ContextReranker:
                     break
 
             # 2. Title & section keyword overlap
-            title_tokens = set(re.findall(r"\b[a-z0-9]+\b", f"{clause_title} {section_title}"))
+            title_tokens = set(
+                re.findall(r"\b[a-z0-9]+\b", f"{clause_title} {section_title}")
+            )
             overlap = len(q_tokens & title_tokens)
             if overlap > 0:
-                bonus += min(overlap * (self.title_match_boost / 2.0), self.title_match_boost)
+                bonus += min(
+                    overlap * (self.title_match_boost / 2.0), self.title_match_boost
+                )
 
             # 3. Content token coverage (Jaccard-like bonus)
             body_tokens = set(re.findall(r"\b[a-z0-9]+\b", text))
@@ -88,7 +92,7 @@ class ContextReranker:
 
         return reranked[:top_k]
 
-    def format_context_for_prompt(self, reranked_chunks: List[Dict[str, Any]]) -> str:
+    def format_context_for_prompt(self, reranked_chunks: list[dict[str, Any]]) -> str:
         """Format reranked chunks into clean, citation-tagged Markdown context for LLM prompts."""
         if not reranked_chunks:
             return "No relevant policy documents found."

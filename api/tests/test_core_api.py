@@ -7,13 +7,14 @@ dependency injection using direct synchronous invocation over async coroutines.
 import asyncio
 import sys
 from unittest.mock import MagicMock
+
 import pytest
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.responses import Response
-from fastapi import HTTPException
 
 from api.app.main import create_app
 from api.app.middleware.timing import TimingMiddleware
@@ -104,18 +105,25 @@ def test_runtime_metrics_telemetry(mock_request):
 
 def test_timing_middleware_header_injection():
     # 1. Custom request ID extraction
-    incoming_headers = [(b"content-type", b"application/json"), (b"x-request-id", b"custom-trace-uuid-888")]
+    incoming_headers = [
+        (b"content-type", b"application/json"),
+        (b"x-request-id", b"custom-trace-uuid-888"),
+    ]
     req_id = TimingMiddleware.extract_or_generate_request_id(incoming_headers)
     assert req_id == "custom-trace-uuid-888"
 
     # 2. Fresh UUID generation when absent
-    fresh_id = TimingMiddleware.extract_or_generate_request_id([(b"host", b"localhost")])
+    fresh_id = TimingMiddleware.extract_or_generate_request_id(
+        [(b"host", b"localhost")]
+    )
     assert fresh_id is not None
     assert len(fresh_id) >= 32
 
     # 3. Header attachment logic
     base_headers = [(b"content-length", b"42")]
-    updated = TimingMiddleware.attach_timing_headers(base_headers, process_time=0.001234, request_id="req-123")
+    updated = TimingMiddleware.attach_timing_headers(
+        base_headers, process_time=0.001234, request_id="req-123"
+    )
     header_dict = {k.decode("utf-8"): v.decode("utf-8") for k, v in updated}
 
     assert "x-process-time" in header_dict

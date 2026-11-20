@@ -4,7 +4,6 @@ Verifies multi-stage build definitions, non-root user enforcement, and healthche
 """
 
 from pathlib import Path
-import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DOCKERFILE_PATH = PROJECT_ROOT / "Dockerfile"
@@ -34,10 +33,16 @@ class TestDockerConfiguration:
         assert "curl -f http://localhost:8000/api/v1/health" in content
 
     def test_dockerignore_excludes_heavy_and_sensitive_directories(self):
-        assert DOCKERIGNORE_PATH.is_file(), ".dockerignore must exist at repository root"
+        assert DOCKERIGNORE_PATH.is_file(), (
+            ".dockerignore must exist at repository root"
+        )
         content = DOCKERIGNORE_PATH.read_text(encoding="utf-8")
-        lines = [line.strip() for line in content.splitlines() if line.strip() and not line.startswith("#")]
-        
+        lines = [
+            line.strip()
+            for line in content.splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
+
         assert ".git" in lines
         assert "venv/" in lines
         assert "__pycache__/" in lines

@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
-from typing import Dict, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Depends
 
 from api.app.schemas.claims import (
-    AdjudicationDecision,
     AnomalyDetail,
     BatchClaimAnalysisRequest,
     BatchClaimAnalysisResponse,
@@ -75,7 +74,9 @@ def analyze_claim(
         classification=ClassificationDetail(
             predicted_category=clf_res.predicted_category,
             confidence=round(clf_res.confidence, 4),
-            all_probabilities={k: round(v, 4) for k, v in clf_res.all_probabilities.items()},
+            all_probabilities={
+                k: round(v, 4) for k, v in clf_res.all_probabilities.items()
+            },
             cleaned_text=clf_res.cleaned_text,
             is_fallback=clf_res.is_fallback,
         ),
@@ -89,7 +90,7 @@ def analyze_claim(
         ),
         adjudication=adjudication,
         latency_ms=total_latency_ms,
-        processed_at=datetime.now(timezone.utc).isoformat(),
+        processed_at=datetime.now(UTC).isoformat(),
     )
 
     return ApiResponse(
@@ -113,8 +114,8 @@ def batch_analyze_claims(
     """Execute batch multi-model claim evaluation."""
     start_time = time.perf_counter()
 
-    results: List[ClaimAnalysisResponse] = []
-    action_counts: Dict[str, int] = {}
+    results: list[ClaimAnalysisResponse] = []
+    action_counts: dict[str, int] = {}
     total_risk: float = 0.0
 
     for req in batch.claims:
@@ -125,7 +126,9 @@ def batch_analyze_claims(
         )
         data = single_res.data
         results.append(data)
-        action_counts[data.adjudication.action] = action_counts.get(data.adjudication.action, 0) + 1
+        action_counts[data.adjudication.action] = (
+            action_counts.get(data.adjudication.action, 0) + 1
+        )
         total_risk += data.anomaly_assessment.risk_score
 
     batch_latency = round((time.perf_counter() - start_time) * 1000.0, 2)

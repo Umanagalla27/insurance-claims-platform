@@ -26,10 +26,16 @@ class PredictionResult(BaseModel):
     """Pydantic model representing a single text classification result."""
 
     predicted_category: str = Field(..., description="Top predicted claim category")
-    confidence: float = Field(..., description="Confidence probability for predicted category [0.0 - 1.0]")
-    all_probabilities: dict[str, float] = Field(..., description="Probabilities across all categories")
+    confidence: float = Field(
+        ..., description="Confidence probability for predicted category [0.0 - 1.0]"
+    )
+    all_probabilities: dict[str, float] = Field(
+        ..., description="Probabilities across all categories"
+    )
     cleaned_text: str = Field(..., description="Normalized text analyzed by model")
-    is_fallback: bool = Field(default=False, description="True if input had no signal and triggered fallback")
+    is_fallback: bool = Field(
+        default=False, description="True if input had no signal and triggered fallback"
+    )
 
 
 class ClaimClassifier:
@@ -50,7 +56,11 @@ class ClaimClassifier:
             self.classes = sorted(self.pipeline.classes_)
             self.metadata = {}
 
-        logger.info("ClaimClassifier initialized with %d classes from %s", len(self.classes), self.model_path)
+        logger.info(
+            "ClaimClassifier initialized with %d classes from %s",
+            len(self.classes),
+            self.model_path,
+        )
 
     def predict(self, raw_text: str | None) -> PredictionResult:
         """Classify a single claim text narrative.

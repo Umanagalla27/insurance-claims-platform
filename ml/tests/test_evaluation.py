@@ -35,7 +35,15 @@ class TestEvaluationEngine:
         assert len(classes) == 7
         assert len(X_test) == 1679
         assert len(y_test) == 1679
-        assert set(classes) == {"Auto", "Disability", "Liability", "Life", "Medical", "Property", "Travel"}
+        assert set(classes) == {
+            "Auto",
+            "Disability",
+            "Liability",
+            "Life",
+            "Medical",
+            "Property",
+            "Travel",
+        }
 
     def test_compute_comprehensive_metrics_structure(self, eval_setup) -> None:
         pipeline, classes, X_test, y_test = eval_setup

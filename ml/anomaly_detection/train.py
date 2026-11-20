@@ -29,7 +29,9 @@ from sklearn.preprocessing import RobustScaler
 
 from ml.anomaly_detection.features import FEATURE_NAMES, AnomalyFeatureExtractor
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 logger = logging.getLogger("ml.anomaly_detection.train")
 
 DEFAULT_ARTIFACT_DIR = Path("ml/artifacts")
@@ -49,7 +51,12 @@ def train_anomaly_model(
     extractor = AnomalyFeatureExtractor()
     X, y, _ = extractor.extract_training_features()
 
-    logger.info("Extracted %d feature rows with %d dimensions: %s", len(X), len(FEATURE_NAMES), FEATURE_NAMES)
+    logger.info(
+        "Extracted %d feature rows with %d dimensions: %s",
+        len(X),
+        len(FEATURE_NAMES),
+        FEATURE_NAMES,
+    )
 
     pipeline = Pipeline(
         [
@@ -84,11 +91,18 @@ def train_anomaly_model(
     # Evaluate against ground-truth fraud flags (unsupervised validation)
     roc_auc = float(roc_auc_score(y, raw_scores))
     conf_mat = confusion_matrix(y, y_pred).tolist()
-    prec, rec, f1, _ = precision_recall_fscore_support(y, y_pred, average="binary", zero_division=0)
+    prec, rec, f1, _ = precision_recall_fscore_support(
+        y, y_pred, average="binary", zero_division=0
+    )
     clf_dict = classification_report(y, y_pred, output_dict=True, zero_division=0)
 
-    logger.info("Unsupervised Anomaly Model Performance: ROC-AUC=%.4f, Precision=%.4f, Recall=%.4f, F1=%.4f",
-                roc_auc, prec, rec, f1)
+    logger.info(
+        "Unsupervised Anomaly Model Performance: ROC-AUC=%.4f, Precision=%.4f, Recall=%.4f, F1=%.4f",
+        roc_auc,
+        prec,
+        rec,
+        f1,
+    )
 
     metrics = {
         "model_name": "RobustScaler + IsolationForest",
@@ -128,8 +142,11 @@ def train_anomaly_model(
     metrics_path = artifact_dir / METRICS_FILENAME
 
     joblib.dump(payload, model_path, compress=3)
-    logger.info("Saved serialized anomaly detector to %s (size: %.2f KB)",
-                model_path, model_path.stat().st_size / 1024.0)
+    logger.info(
+        "Saved serialized anomaly detector to %s (size: %.2f KB)",
+        model_path,
+        model_path.stat().st_size / 1024.0,
+    )
 
     with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
