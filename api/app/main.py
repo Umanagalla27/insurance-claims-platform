@@ -11,6 +11,7 @@ from api.app.middleware.errors import setup_exception_handlers
 from api.app.middleware.timing import TimingMiddleware
 from api.app.routers.claims import router as claims_router
 from api.app.routers.health import router as health_router
+from api.app.routers.rag import router as rag_router
 from api.app.services.container import lifespan
 
 # Configure root logger
@@ -57,6 +58,8 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix=settings.API_V1_PREFIX)
     # Claims analysis and ML adjudication router
     app.include_router(claims_router, prefix=settings.API_V1_PREFIX)
+    # Policy RAG chatbot & knowledge retrieval router
+    app.include_router(rag_router, prefix=settings.API_V1_PREFIX)
     # Convenience liveness alias at root /health for Kubernetes / AWS Target Groups
     app.include_router(health_router, prefix="")
 

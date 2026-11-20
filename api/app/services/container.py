@@ -12,6 +12,8 @@ from api.app.config import settings
 from ml.anomaly_detection.predict import ClaimAnomalyDetector
 from ml.classification.predict import ClaimClassifier
 from rag_chatbot.retrieval.service import PolicyRetrievalService
+from api.app.services.rag_cache import RAGQueryCache, rag_cache
+from api.app.services.rag_service import PolicyRAGService
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +25,14 @@ class ServiceContainer:
         self.classifier: Optional[ClaimClassifier] = None
         self.anomaly_detector: Optional[ClaimAnomalyDetector] = None
         self.retrieval_service: Optional[PolicyRetrievalService] = None
+        self.rag_service: Optional[PolicyRAGService] = None
+        self.rag_cache: RAGQueryCache = rag_cache
         self.startup_time: float = 0.0
         self.status_flags: Dict[str, bool] = {
             "classifier": False,
             "anomaly_detector": False,
             "retrieval_service": False,
+            "rag_service": False,
         }
 
     def initialize(self) -> None:
@@ -57,7 +62,7 @@ class ServiceContainer:
         except Exception as e:
             logger.error("Failed to load ClaimAnomalyDetector: %s", e)
 
-        # 3. RAG Hybrid Retrieval Service
+        # 3. RAG Hybrid Retrieval Service & Generator
         try:
             if settings.VECTOR_INDEX_DIR.exists() and settings.CHUNKS_MANIFEST_PATH.exists():
                 self.retrieval_service = PolicyRetrievalService.from_artifacts(
@@ -65,7 +70,9 @@ class ServiceContainer:
                     manifest_path=settings.CHUNKS_MANIFEST_PATH,
                 )
                 self.status_flags["retrieval_service"] = True
-                logger.info("Loaded PolicyRetrievalService from %s", settings.VECTOR_INDEX_DIR)
+                self.rag_service = PolicyRAGService(self.retrieval_service)
+                self.status_flags["rag_service"] = True
+                logger.info("Loaded PolicyRetrievalService and PolicyRAGService from %s", settings.VECTOR_INDEX_DIR)
             else:
                 logger.warning("RAG artifacts missing (index or manifest)")
         except Exception as e:
@@ -79,6 +86,7 @@ class ServiceContainer:
         self.classifier = None
         self.anomaly_detector = None
         self.retrieval_service = None
+        self.rag_service = None
         for k in self.status_flags:
             self.status_flags[k] = False
 
@@ -106,6 +114,10 @@ def get_classifier(request: Request) -> ClaimClassifier:
     return services.classifier
 
 
+# Backward-compatible alias
+get_claim_classifier = get_classifier
+
+
 def get_anomaly_detector(request: Request) -> ClaimAnomalyDetector:
     """Dependency injection provider for ClaimAnomalyDetector."""
     services: ServiceContainer = getattr(request.app.state, "services", container)
@@ -126,3 +138,20 @@ def get_retrieval_service(request: Request) -> PolicyRetrievalService:
             detail="Policy RAG retrieval service is currently unavailable or uninitialized.",
         )
     return services.retrieval_service
+
+
+def get_rag_service(request: Request) -> PolicyRAGService:
+    """Dependency injection provider for PolicyRAGService."""
+    services: ServiceContainer = getattr(request.app.state, "services", container)
+    if not services.rag_service or not services.status_flags.get("rag_service"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Policy RAG generation service is currently unavailable or uninitialized.",
+        )
+    return services.rag_service
+
+
+def get_rag_cache(request: Request) -> RAGQueryCache:
+    """Dependency injection provider for RAGQueryCache."""
+    services: ServiceContainer = getattr(request.app.state, "services", container)
+    return services.rag_cache

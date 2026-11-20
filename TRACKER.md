@@ -24,7 +24,8 @@
 | Sprint 5 | 5.3 | ICIP-015 | Hybrid Search & BM25 / Reranking: Reciprocal Rank Fusion (RRF), Okapi BM25 & Context Reranker with Markdown citations (48/48 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 6 | 6.1 | ICIP-016 | FastAPI Core Architecture & Service Integration: Dependency injection, pure ASGI timing middleware, Pydantic v2 schemas & unified platform gateway (58/58 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 6 | 6.2 | ICIP-017 | Claims Processing & ML Prediction Endpoints: POST /api/v1/claims/analyze multi-model adjudication & explainability (64/64 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 6 | 6.3 | ICIP-018 | Policy RAG Chatbot Endpoint & In-Memory/Redis Caching: Grounded policy queries, citation assembly & cache invalidation | 🔜 Next | — |
+| Sprint 6 | 6.3 | ICIP-018 | Policy RAG Chatbot Endpoint & In-Memory/Redis Caching: Grounded policy queries, citation assembly & cache invalidation (71/71 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 7 | 7.1 | ICIP-019 | Multi-Stage Dockerfile & Container Optimization: Multi-stage build, non-root user, slim Python 3.12, healthchecks (<400MB image) | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
