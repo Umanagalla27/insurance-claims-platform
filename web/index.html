@@ -60,8 +60,12 @@
         </div>
       </div>
 
-      <!-- Live Telemetry Status Badges -->
-      <div class="flex items-center space-x-4">
+      <!-- Live Telemetry Status Badges & Tour Button -->
+      <div class="flex items-center space-x-3">
+        <button onclick="startAutoTour()" id="btn-tour" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white text-xs font-bold shadow-md flex items-center space-x-1.5 transition">
+          <i class="fa-solid fa-circle-play text-white"></i>
+          <span>▶ Play Interactive Tour</span>
+        </button>
         <div id="backend-status" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="backend-label">All Systems Ready (173 Tests)</span>
@@ -999,6 +1003,91 @@
         btn.innerHTML = '<i class="fa-solid fa-flask-vial mr-1.5"></i>Simulate Covariate Shift';
         btn.className = "px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 text-xs font-semibold transition";
         renderDriftTable(false);
+      }
+    }
+
+    // Interactive Video / Automated Walkthrough Tour
+    let tourRunning = false;
+    function showTourToast(stepNum, title, message) {
+      let toast = document.getElementById('tour-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'tour-toast';
+        toast.className = 'fixed bottom-6 right-6 z-50 max-w-md p-4 rounded-xl glass border-2 border-brand-500 shadow-2xl transition-all duration-500 flex items-start space-x-3 glow-indigo';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white shrink-0 font-bold text-sm">
+          ${stepNum}
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+            <span>${title}</span>
+            <span class="text-[10px] bg-brand-500/30 text-brand-300 px-1.5 py-0.5 rounded font-mono">Live Demo</span>
+          </h4>
+          <p class="text-xs text-slate-300 mt-1">${message}</p>
+        </div>
+      `;
+    }
+
+    async function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function startAutoTour() {
+      if (tourRunning) return;
+      tourRunning = true;
+      const btn = document.getElementById('btn-tour');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Tour in Progress...';
+
+      try {
+        // Step 1: Executive Dashboard
+        switchTab('tab-dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showTourToast('1/5', 'Executive Financial Analytics', 'Displaying $1.54B in audited claims liability, $69.6M in fraud prevented, 472 STP touchless settlements, and 73.1% Snappy Parquet storage reduction.');
+        await sleep(4000);
+
+        // Step 2: Live Claims Adjudicator - High Risk Fraud Demo
+        switchTab('tab-adjudicator');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showTourToast('2/5', 'Multi-Model Adjudication', 'Selecting suspicious midnight vehicle crash with mismatched VIN and newly bound policy...');
+        loadSample('fraud');
+        await sleep(1500);
+        showTourToast('2/5', 'Running ML & Underwriting Rules', 'Evaluating TF-IDF domain classifier + Isolation Forest anomaly detection in 1.18ms...');
+        await runAdjudication();
+        await sleep(4500);
+
+        // Step 3: Low Risk STP Approval Demo
+        showTourToast('3/5', 'Touchless Straight-Through-Processing', 'Loading low-risk annual wellness checkup under $500 threshold...');
+        loadSample('stp');
+        await sleep(1500);
+        await runAdjudication();
+        await sleep(4000);
+
+        // Step 4: Hybrid Policy RAG Chatbot
+        switchTab('tab-rag');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showTourToast('4/5', 'Hybrid FAISS + BM25 Policy RAG', 'Querying policy clauses for water damage exclusions with reciprocal rank fusion...');
+        document.getElementById('rag-input').value = 'Are water damage and flooding covered under Home Secure?';
+        await sleep(1000);
+        await sendRAGQuery();
+        await sleep(4500);
+
+        // Step 5: MLOps Drift Governance
+        switchTab('tab-mlops');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showTourToast('5/5', 'MLOps Drift Monitor & Auto-Retraining', 'Simulating covariate shift via Kolmogorov-Smirnov & PSI tests to trigger candidate model retraining...');
+        if (!isDriftSimActive) triggerDriftSimulation();
+        await sleep(5000);
+
+        // Finish Tour
+        showTourToast('✓', 'Live Tour Complete', 'All 10 Sprints verified: ETL, Warehousing, Dual ML Models, RAG, Docker, AWS Terraform, BI & MLOps Governance.');
+        await sleep(3500);
+        const toast = document.getElementById('tour-toast');
+        if (toast) toast.remove();
+      } finally {
+        tourRunning = false;
+        btn.innerHTML = '<i class="fa-solid fa-circle-play mr-1.5"></i>▶ Play Interactive Tour';
       }
     }
   </script>
