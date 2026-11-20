@@ -1,0 +1,116 @@
+// ==============================================================================
+// Power BI DAX Measures — Insurance Claims Intelligence Platform (ICIP)
+// ==============================================================================
+// Author: Uma (Gen AI & Platform Engineer)
+// Architecture: Kimball Star-Schema Semantic Layer
+// Target: Power BI Desktop / Microsoft Fabric Semantic Models
+// ==============================================================================
+
+// ------------------------------------------------------------------------------
+// 1. VOLUME & FINANCIAL TOTALS
+// ------------------------------------------------------------------------------
+
+[Total Claims Filed] = 
+COUNTROWS(fact_claims_adjudication)
+
+[Total Incurred Claims] = 
+SUM(fact_claims_adjudication[claim_amount])
+
+[Total Approved Payout] = 
+SUM(fact_claims_adjudication[approved_amount])
+
+[Total Earned Premium] = 
+SUM(dim_policy[annual_premium])
+
+[Average Claim Amount] = 
+AVERAGE(fact_claims_adjudication[claim_amount])
+
+// ------------------------------------------------------------------------------
+// 2. UNDERWRITING & PROFITABILITY KPIS
+// ------------------------------------------------------------------------------
+
+// Loss Ratio is the single most critical KPI for P&C insurance underwriting.
+// Target benchmark: 60% - 75%. Above 100% indicates underwriting unprofitability.
+[Loss Ratio %] = 
+DIVIDE(
+    [Total Approved Payout],
+    [Total Earned Premium],
+    0
+)
+
+[Payout Ratio %] = 
+DIVIDE(
+    [Total Approved Payout],
+    [Total Incurred Claims],
+    0
+)
+
+// ------------------------------------------------------------------------------
+// 3. OPERATIONAL EXCELLENCE & STRAIGHT-THROUGH PROCESSING (STP)
+// ------------------------------------------------------------------------------
+
+[STP Claims Count] = 
+CALCULATE(
+    COUNTROWS(fact_claims_adjudication),
+    fact_claims_adjudication[is_straight_through_approved] = 1
+)
+
+// Straight-Through Processing (STP) Rate measures automated AI adjudication efficiency
+// Target benchmark: > 35% automated touchless settlement for routine auto/property claims
+[STP Rate %] = 
+DIVIDE(
+    [STP Claims Count],
+    [Total Claims Filed],
+    0
+)
+
+[Approval Rate %] = 
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(fact_claims_adjudication),
+        fact_claims_adjudication[claim_status] = "APPROVED"
+    ),
+    [Total Claims Filed],
+    0
+)
+
+[Average Filing Lag Days] = 
+AVERAGE(fact_claims_adjudication[filing_lag_days])
+
+// ------------------------------------------------------------------------------
+// 4. FRAUD DETECTION & RISK MITIGATION METRICS
+// ------------------------------------------------------------------------------
+
+[Fraud Incident Count] = 
+CALCULATE(
+    COUNTROWS(fact_claims_adjudication),
+    fact_claims_adjudication[is_fraud] = 1
+)
+
+[Fraud Rate %] = 
+DIVIDE(
+    [Fraud Incident Count],
+    [Total Claims Filed],
+    0
+)
+
+// Hard financial dollar savings delivered by our Machine Learning & Isolation Forest models
+[Fraud Loss Avoidance $] = 
+SUM(fact_claims_adjudication[fraud_loss_avoidance])
+
+// ------------------------------------------------------------------------------
+// 5. TIME-INTELLIGENCE & TREND ANALYSIS
+// ------------------------------------------------------------------------------
+
+[Claims Previous Month] = 
+CALCULATE(
+    [Total Claims Filed],
+    DATEADD(dim_date[full_date], -1, MONTH)
+)
+
+[Claims MoM Growth %] = 
+DIVIDE(
+    [Total Claims Filed] - [Claims Previous Month],
+    [Claims Previous Month],
+    0
+)

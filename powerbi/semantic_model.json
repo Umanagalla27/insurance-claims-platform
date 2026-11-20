@@ -1,0 +1,112 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/dax/tabular-metadata/2021-01-01/",
+  "name": "InsuranceClaimsIntelligenceSemanticModel",
+  "compatibilityLevel": 1567,
+  "description": "Enterprise Star-Schema Semantic Model for Insurance Claims Analytics, Loss Ratio, and Fraud Detection.",
+  "model": {
+    "culture": "en-US",
+    "tables": [
+      {
+        "name": "dim_date",
+        "description": "Conformed calendar dimension table supporting time intelligence hierarchies.",
+        "columns": [
+          {"name": "date_key", "dataType": "int64", "isKey": true},
+          {"name": "full_date", "dataType": "dateTime"},
+          {"name": "calendar_year", "dataType": "int64"},
+          {"name": "calendar_quarter", "dataType": "string"},
+          {"name": "month_number", "dataType": "int64"},
+          {"name": "month_name", "dataType": "string"},
+          {"name": "month_short_name", "dataType": "string"},
+          {"name": "week_of_year", "dataType": "int64"},
+          {"name": "day_of_week", "dataType": "int64"},
+          {"name": "day_name", "dataType": "string"},
+          {"name": "is_weekend", "dataType": "int64"}
+        ]
+      },
+      {
+        "name": "dim_policy",
+        "description": "Policy dimension capturing policy type, coverage tiers, and premium bands.",
+        "columns": [
+          {"name": "policy_id", "dataType": "string", "isKey": true},
+          {"name": "policy_type", "dataType": "string"},
+          {"name": "policy_status", "dataType": "string"},
+          {"name": "annual_premium", "dataType": "decimal"},
+          {"name": "coverage_limit", "dataType": "decimal"},
+          {"name": "deductible", "dataType": "decimal"},
+          {"name": "coverage_tier", "dataType": "string"},
+          {"name": "premium_band", "dataType": "string"},
+          {"name": "effective_date", "dataType": "dateTime"},
+          {"name": "expiration_date", "dataType": "dateTime"}
+        ]
+      },
+      {
+        "name": "dim_customer",
+        "description": "Customer demographic profile, credit tiers, and US geographic regions.",
+        "columns": [
+          {"name": "customer_id", "dataType": "string", "isKey": true},
+          {"name": "full_name", "dataType": "string"},
+          {"name": "email", "dataType": "string"},
+          {"name": "phone", "dataType": "string"},
+          {"name": "city", "dataType": "string"},
+          {"name": "state", "dataType": "string"},
+          {"name": "us_region", "dataType": "string"},
+          {"name": "credit_score", "dataType": "int64"},
+          {"name": "credit_tier", "dataType": "string"},
+          {"name": "annual_income", "dataType": "decimal"},
+          {"name": "customer_since", "dataType": "string"}
+        ]
+      },
+      {
+        "name": "fact_claims_adjudication",
+        "description": "Transaction grain fact table recording claim filings, adjudication outcomes, and fraud flags.",
+        "columns": [
+          {"name": "claim_id", "dataType": "string", "isKey": true},
+          {"name": "policy_id", "dataType": "string"},
+          {"name": "customer_id", "dataType": "string"},
+          {"name": "date_key", "dataType": "int64"},
+          {"name": "claim_category", "dataType": "string"},
+          {"name": "claim_priority", "dataType": "string"},
+          {"name": "claim_status", "dataType": "string"},
+          {"name": "claim_amount", "dataType": "decimal"},
+          {"name": "approved_amount", "dataType": "decimal"},
+          {"name": "payout_ratio_pct", "dataType": "double"},
+          {"name": "filing_lag_days", "dataType": "int64"},
+          {"name": "is_straight_through_approved", "dataType": "int64"},
+          {"name": "is_fraud", "dataType": "int64"},
+          {"name": "fraud_reason", "dataType": "string"},
+          {"name": "fraud_loss_avoidance", "dataType": "decimal"},
+          {"name": "claim_timestamp", "dataType": "dateTime"}
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "FactClaims_DimDate",
+        "fromTable": "fact_claims_adjudication",
+        "fromColumn": "date_key",
+        "toTable": "dim_date",
+        "toColumn": "date_key",
+        "cardinality": "manyToOne",
+        "crossFilteringBehavior": "singleDirection"
+      },
+      {
+        "name": "FactClaims_DimPolicy",
+        "fromTable": "fact_claims_adjudication",
+        "fromColumn": "policy_id",
+        "toTable": "dim_policy",
+        "toColumn": "policy_id",
+        "cardinality": "manyToOne",
+        "crossFilteringBehavior": "singleDirection"
+      },
+      {
+        "name": "FactClaims_DimCustomer",
+        "fromTable": "fact_claims_adjudication",
+        "fromColumn": "customer_id",
+        "toTable": "dim_customer",
+        "toColumn": "customer_id",
+        "cardinality": "manyToOne",
+        "crossFilteringBehavior": "singleDirection"
+      }
+    ]
+  }
+}

@@ -31,7 +31,8 @@
 | Sprint 8 | 8.1 | ICIP-022 | AWS Infrastructure as Code (IaC) with Terraform: Free-Tier S3, IAM roles, security groups & EC2 t2.micro provisioner (90/90 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 8 | 8.2 | ICIP-023 | Event-Driven Serverless ETL Architecture: AWS Lambda ingestion trigger, S3 event notifications, dead-letter quarantine routing & Free-Tier 128MB sizing (99/99 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 8 | 8.3 | ICIP-024 | CloudFormation Stack, CloudWatch Alarms, FinOps Budgets & Automated Teardown Guardrails: secondary CFn SNS alerts, metric alarms, $1 budget tripwire & zero-cost purge (111/111 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 9 | 9.1 | ICIP-025 | Star-Schema Warehouse Dimensional Views & Power BI Semantic Layer Modeling | 🔜 Next | — |
+| Sprint 9 | 9.1 | ICIP-025 | Star-Schema Warehouse Dimensional Views & Power BI Semantic Layer Modeling: conformed dimensions, fact views, DAX measures, Tabular Model & referential integrity (135/135 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 9 | 9.2 | ICIP-026 | Power BI / Metabase Executive & Operational Analytics Dashboards: Loss ratio, fraud detection rates, RAG deflection & interactive filters | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
