@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -23,16 +25,22 @@ from rag_chatbot.vector_store.embeddings import BaseEmbedder, SemanticDenseEmbed
 logger = logging.getLogger("rag_chatbot.vector_store.faiss_store")
 
 # Attempt importing FAISS with graceful fallback
+# On Windows, faiss-cpu depends on OpenMP (vcomp140.dll) which can trigger Windows exception 0xc0000008
+# in restricted process environments. We use the pure NumPy engine on Windows by default.
 FAISS_AVAILABLE = False
-try:
-    import faiss  # type: ignore
+if sys.platform != "win32" or os.getenv("ENABLE_WINDOWS_FAISS", "0") == "1":
+    try:
+        import faiss  # type: ignore
 
-    # Verify C++ SWIG DLL initialization by creating a toy index
-    _test_index = faiss.IndexFlatIP(4)
-    FAISS_AVAILABLE = True
-except Exception as e:
-    logger.info("FAISS binary acceleration unavailable (%s); using NumPy vector engine.", e)
-    faiss = None  # type: ignore
+        # Verify C++ SWIG DLL initialization by creating a toy index
+        _test_index = faiss.IndexFlatIP(4)
+        FAISS_AVAILABLE = True
+    except (ImportError, Exception, BaseException) as e:
+        logger.info("FAISS binary acceleration unavailable (%s); using NumPy vector engine.", e)
+        faiss = None  # type: ignore
+else:
+    logger.info("Using native NumPy vector similarity engine on Windows platform.")
+    faiss = None
 
 
 class SearchResult(BaseModel):
@@ -274,11 +282,16 @@ class FAISSVectorStore:
                 try:
                     with open(index_path, "rb") as f:
                         mat = np.load(f)
+                        store._vectors = list(mat)
                 except Exception:
-                    mat = np.empty((0, store.dimension), dtype=np.float32)
-            else:
-                mat = np.empty((0, store.dimension), dtype=np.float32)
-            store._vectors = list(mat)
+                    pass
+
+            # If index binary was FAISS C++ binary or unreadable by numpy, re-embed from metadata
+            if len(store._vectors) == 0 and len(data.get("metadata", [])) > 0:
+                logger.info("Regenerating NumPy vectors from metadata text payloads...")
+                texts = [m["text"] for m in data["metadata"]]
+                embs = store.embedder.embed_documents(texts)
+                store._vectors = list(embs)
 
         store.metadata_store = data["metadata"]
         logger.info("Loaded vector store with %d vectors (engine: %s)",

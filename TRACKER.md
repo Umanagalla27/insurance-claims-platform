@@ -22,7 +22,8 @@
 | Sprint 5 | 5.1 | ICIP-013 | Policy Document Ingestion & Semantic Chunking: 7 policy contracts, clause-aware chunker with contextual breadcrumbs (66 chunks, 33/33 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 5 | 5.2 | ICIP-014 | Vector Embeddings & FAISS Vector Store: Dense semantic indexing, dual-mode FAISS/NumPy engine & metadata filtering (39/39 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 5 | 5.3 | ICIP-015 | Hybrid Search & BM25 / Reranking: Reciprocal Rank Fusion (RRF), Okapi BM25 & Context Reranker with Markdown citations (48/48 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 6 | 6.1 | ICIP-016 | FastAPI Core Architecture & Service Integration: Dependency injection, async routes, Pydantic v2 schemas & unified platform gateway | 🔜 Next | — |
+| Sprint 6 | 6.1 | ICIP-016 | FastAPI Core Architecture & Service Integration: Dependency injection, pure ASGI timing middleware, Pydantic v2 schemas & unified platform gateway (58/58 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 6 | 6.2 | ICIP-017 | Claims Processing & ML Prediction Endpoints: POST /api/v1/claims/analyze multi-model adjudication & explainability | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
