@@ -36,3 +36,13 @@ output "api_endpoint_url" {
   description = "Public URL for accessing the FastAPI documentation and health probe"
   value       = "http://${module.ec2_compute.public_ip}:8000/docs"
 }
+
+output "lambda_function_arn" {
+  description = "ARN of the serverless claims ingestion trigger Lambda"
+  value       = module.lambda_ingestion.lambda_arn
+}
+
+output "lambda_function_name" {
+  description = "Name of the serverless claims ingestion trigger Lambda"
+  value       = module.lambda_ingestion.lambda_function_name
+}

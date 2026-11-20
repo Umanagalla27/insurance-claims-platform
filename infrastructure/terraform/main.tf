@@ -43,3 +43,15 @@ module "ec2_compute" {
   allowed_ssh_cidr          = var.allowed_ssh_cidr
   allowed_http_cidr         = var.allowed_http_cidr
 }
+
+# ------------------------------------------------------------------------------
+# 4. Serverless Event-Driven Claims Ingestion Module (AWS Lambda)
+# ------------------------------------------------------------------------------
+module "lambda_ingestion" {
+  source = "./modules/lambda"
+
+  project_name  = var.project_name
+  environment   = var.environment
+  s3_bucket_arn = module.s3_storage.bucket_arn
+  s3_bucket_id  = module.s3_storage.bucket_id
+}

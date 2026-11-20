@@ -29,7 +29,8 @@
 | Sprint 7 | 7.2 | ICIP-020 | Multi-Service Docker Compose Orchestration: API, MySQL 8.4, Redis, healthcheck dependencies & network isolation (81/81 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 7 | 7.3 | ICIP-021 | Automated CI/CD Pipelines: GitHub Actions & Jenkinsfile for lint, test, container build & push (85/85 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 8 | 8.1 | ICIP-022 | AWS Infrastructure as Code (IaC) with Terraform: Free-Tier S3, IAM roles, security groups & EC2 t2.micro provisioner (90/90 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 8 | 8.2 | ICIP-023 | Event-Driven Serverless ETL Architecture: AWS Lambda ingestion trigger, S3 event notifications & IAM least-privilege role | 🔜 Next | — |
+| Sprint 8 | 8.2 | ICIP-023 | Event-Driven Serverless ETL Architecture: AWS Lambda ingestion trigger, S3 event notifications, dead-letter quarantine routing & Free-Tier 128MB sizing (99/99 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 8 | 8.3 | ICIP-024 | CloudFormation Stack, CloudWatch Alarms, FinOps Budgets & Automated Teardown Guardrails | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
