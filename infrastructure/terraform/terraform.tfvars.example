@@ -1,0 +1,15 @@
+# ==============================================================================
+# terraform.tfvars.example — Example Configuration for AWS Free Tier Deployment
+# ==============================================================================
+# Copy this file to terraform.tfvars:
+#   copy terraform.tfvars.example terraform.tfvars
+# ==============================================================================
+
+aws_region        = "us-east-1"
+environment       = "production"
+project_name      = "insurance-claims-platform"
+s3_bucket_prefix  = "insurance-claims-landing"
+ec2_instance_type = "t2.micro"    # Free Tier (750 hours/month)
+allowed_ssh_cidr  = "0.0.0.0/0"   # Restrict to your corporate or home IP in production
+allowed_http_cidr = "0.0.0.0/0"   # Publicly reachable API gateway
+ssh_key_name      = null          # Provide AWS KeyPair name if SSH access is required

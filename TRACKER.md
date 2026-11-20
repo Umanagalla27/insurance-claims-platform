@@ -28,7 +28,8 @@
 | Sprint 7 | 7.1 | ICIP-019 | Multi-Stage Dockerfile & Container Optimization: Multi-stage build, non-root user (10001), slim Python 3.12, healthchecks & .dockerignore (75/75 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 7 | 7.2 | ICIP-020 | Multi-Service Docker Compose Orchestration: API, MySQL 8.4, Redis, healthcheck dependencies & network isolation (81/81 tests pass) | ✅ Done | 2026-11-20 |
 | Sprint 7 | 7.3 | ICIP-021 | Automated CI/CD Pipelines: GitHub Actions & Jenkinsfile for lint, test, container build & push (85/85 tests pass) | ✅ Done | 2026-11-20 |
-| Sprint 8 | 8.1 | ICIP-022 | AWS Infrastructure as Code (IaC) with Terraform: Free-Tier S3, IAM roles, security groups & EC2 t2.micro provisioner | 🔜 Next | — |
+| Sprint 8 | 8.1 | ICIP-022 | AWS Infrastructure as Code (IaC) with Terraform: Free-Tier S3, IAM roles, security groups & EC2 t2.micro provisioner (90/90 tests pass) | ✅ Done | 2026-11-20 |
+| Sprint 8 | 8.2 | ICIP-023 | Event-Driven Serverless ETL Architecture: AWS Lambda ingestion trigger, S3 event notifications & IAM least-privilege role | 🔜 Next | — |
 
 <!-- 
 Key decisions logged:
