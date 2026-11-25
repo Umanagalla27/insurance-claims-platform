@@ -48,6 +48,8 @@ Traditional insurance carriers waste 4 to 6 weeks manually reviewing claims whil
 * **73.1% Cold Storage Reduction**: Snappy-compressed columnar Apache Parquet snapshots compressed 1,066.8 KB of analytical warehouse data down to 286.5 KB with verified SHA-256 integrity checksums.
 * **$0.00 AWS Cloud Spend**: Enforced strict FinOps budget tripwires ($1.00 USD alert ceiling) ensuring zero out-of-pocket costs on AWS Free Tier.
 
+![ICIP Portal Overview](docs/assets/screenshots/portal_overview.svg)
+
 ---
 
 ## 🌐 Interactive Web Portal & Live Video Demonstration
@@ -80,9 +82,13 @@ Inside the web portal's top navigation bar, clicking the **"▶ Play Interactive
 
 > **Recording a 60-second video demo**: Press `Win + Alt + R` on Windows to record this 1-click interactive walkthrough for your LinkedIn portfolio or GitHub README!
 
+![ICIP Live Video Walkthrough](docs/assets/screenshots/demo_video_walkthrough.svg)
+
 ---
 
 ## 🏗️ End-to-End System Architecture
+
+![ICIP Architecture Topology](docs/assets/screenshots/architecture_topology.svg)
 
 ```mermaid
 flowchart TD
@@ -248,6 +254,8 @@ Automated Test Verification     ~80% Unit Coverage      173 / 173 Passing Tests 
   # Pytest: 33 passed in 5.20s (109 total cumulative passed)
   ```
 
+  ![ICIP Policy RAG Chatbot](docs/assets/screenshots/policy_rag_chatbot.svg)
+
 ---
 
 ### Sprint 6: Production FastAPI Gateway & Underwriting Rule Engine
@@ -264,6 +272,8 @@ Automated Test Verification     ~80% Unit Coverage      173 / 173 Passing Tests 
   # Policy RAG Endpoint: 200 OK (< 25ms cached)
   # Pytest: 21 passed in 4.10s (130 total cumulative passed)
   ```
+
+  ![ICIP Claims Adjudicator](docs/assets/screenshots/claims_adjudicator.svg)
 
 ---
 
@@ -328,6 +338,8 @@ Automated Test Verification     ~80% Unit Coverage      173 / 173 Passing Tests 
   # Result: 100% Comprehensive Audit Checks Passed across all 10 Sprints!
   # Pytest: 9 passed in 2.10s (173 total cumulative passed)
   ```
+
+  ![ICIP MLOps Drift Monitor](docs/assets/screenshots/mlops_drift_monitor.svg)
 
 ---
 

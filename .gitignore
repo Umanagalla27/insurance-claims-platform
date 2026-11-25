@@ -118,3 +118,6 @@ powerbi/*.pbix            # Binary, not diffable — track in separate storage
 # Keep the README and DAX docs
 !powerbi/README.md
 !powerbi/dax_measures.md
+ 
+.chrome-temp/
+

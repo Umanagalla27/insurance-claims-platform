@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="680" fill="url(#bgGrad)"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="70" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+  <text x="40" y="42" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="18" font-weight="bold">🤖 Policy RAG AI Chatbot (Hybrid FAISS + BM25 Search)</text>
+  <text x="860" y="42" fill="#38bdf8" font-family="Segoe UI, sans-serif" font-size="12" font-weight="600">Reciprocal Rank Fusion (k=60) • 66 Clauses</text>
+
+  <!-- Prompt Chips -->
+  <g transform="translate(40, 85)">
+    <rect x="0" y="0" width="350" height="32" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+    <text x="15" y="21" fill="#38bdf8" font-size="11">❓ Are flood and water damage covered under Home Secure?</text>
+
+    <rect x="370" y="0" width="340" height="32" rx="8" fill="#1e293b" stroke="#475569"/>
+    <text x="385" y="21" fill="#94a3b8" font-size="11">❓ What is the waiting period for pre-existing medical conditions?</text>
+
+    <rect x="730" y="0" width="280" height="32" rx="8" fill="#1e293b" stroke="#475569"/>
+    <text x="745" y="21" fill="#94a3b8" font-size="11">❓ What is the grace period for premium renewals?</text>
+  </g>
+
+  <!-- Chat Dialog Area -->
+  <g transform="translate(40, 135)">
+    <rect x="0" y="0" width="1120" height="435" rx="14" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+
+    <!-- User Message -->
+    <g transform="translate(400, 30)">
+      <rect x="0" y="0" width="680" height="55" rx="12" fill="#4f46e5" fill-opacity="0.25" stroke="#6366f1" stroke-width="1"/>
+      <text x="20" y="25" fill="#c7d2fe" font-size="11" font-weight="bold">UMA (Claims Adjuster)</text>
+      <text x="20" y="45" fill="#ffffff" font-size="13">"Are water damage and flooding covered under Home Secure Policy contracts?"</text>
+    </g>
+
+    <!-- AI Bot Message -->
+    <g transform="translate(40, 105)">
+      <rect x="0" y="0" width="850" height="230" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="25" y="30" fill="#38bdf8" font-size="11" font-weight="bold">ICIP POLICY RAG ASSISTANT</text>
+      <text x="220" y="30" fill="#34d399" font-size="10">✓ Grounded via Dense Cosine + Sparse BM25 Fusion (18.4ms)</text>
+
+      <text x="25" y="60" fill="#e2e8f0" font-size="13">Under the standard <tspan font-weight="bold" fill="#ffffff">Home Secure Policy (Policy Type: HOME_SECURE)</tspan>, water damage caused by</text>
+      <text x="25" y="82" fill="#e2e8f0" font-size="13">natural flooding, surface runoff, or sewer backup is <tspan font-weight="bold" fill="#ef4444">STRICTLY EXCLUDED</tspan> from base coverage.</text>
+      <text x="25" y="104" fill="#e2e8f0" font-size="13">Sudden and accidental internal plumbing discharge is covered up to policy limits.</text>
+
+      <!-- Grounded Citation Box -->
+      <rect x="25" y="130" width="800" height="75" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-dasharray="2,2"/>
+      <text x="40" y="152" fill="#38bdf8" font-size="11" font-weight="bold">📌 Verified Clause Citation: [Clause SEC-4.2 - Water Damage Exclusions]</text>
+      <text x="40" y="172" fill="#94a3b8" font-size="11">"Section 4.2: Loss or damage caused directly or indirectly by tidal surge, surface water, overflow of bodies</text>
+      <text x="40" y="190" fill="#94a3b8" font-size="11">of water, or water that backs up through sewers or drains is uninsurable under standard terms."</text>
+    </g>
+
+    <!-- Retrieval Metrics Strip -->
+    <g transform="translate(40, 360)">
+      <rect x="0" y="0" width="1040" height="50" rx="8" fill="#0f172a" stroke="#334155"/>
+      <text x="20" y="30" fill="#94a3b8" font-size="11">Dense Vector (FAISS): <tspan fill="#34d399" font-weight="bold">Cosine Similarity 0.941</tspan></text>
+      <text x="320" y="30" fill="#94a3b8" font-size="11">Lexical (BM25): <tspan fill="#38bdf8" font-weight="bold">Score 18.72</tspan></text>
+      <text x="560" y="30" fill="#94a3b8" font-size="11">RRF Rank Score: <tspan fill="#a855f7" font-weight="bold">0.0328</tspan></text>
+      <text x="800" y="30" fill="#94a3b8" font-size="11">Cache Status: <tspan fill="#10b981" font-weight="bold">LRU HIT (0.42ms)</tspan></text>
+    </g>
+  </g>
+
+  <!-- Input Field Bar -->
+  <g transform="translate(40, 590)">
+    <rect x="0" y="0" width="980" height="48" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="25" y="30" fill="#94a3b8" font-size="13">Ask any question regarding coverage limits, waiting periods, or policy exclusions...</text>
+    <rect x="1000" y="0" width="160" height="48" rx="10" fill="#4f46e5" stroke="#6366f1"/>
+    <text x="1040" y="30" fill="#ffffff" font-size="14" font-weight="bold">Send Query</text>
+  </g>
+</svg>
